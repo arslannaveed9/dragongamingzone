@@ -1,0 +1,15 @@
+import "@/models/user";
+import "@/models/settings";
+import "@/models/station-type";
+import "@/models/station";
+import "@/models/customer";
+import "@/models/discount";
+import "@/models/pricing-rule";
+import "@/models/booking";
+import "@/models/payment";
+import "@/models/audit-log";
+import "@/models/counter";
+import "@/models/product";
+import "@/models/pos";
+import "@/models/contact";
+import "@/models/notice";

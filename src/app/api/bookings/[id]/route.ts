@@ -1,0 +1,18 @@
+import { authed, readJson } from "@/lib/http";
+import { updateBookingSchema } from "@/lib/validators";
+import { getBooking, updateBooking } from "@/services/booking-service";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+type Context = { params: Promise<{ id: string }> };
+
+export async function GET(_request: Request, context: Context) {
+  const { id } = await context.params;
+  return authed("bookings.view", async () => getBooking(id));
+}
+
+export async function PATCH(request: Request, context: Context) {
+  const { id } = await context.params;
+  return authed("bookings.update", async (actor) => updateBooking(id, updateBookingSchema.parse(await readJson(request)), actor));
+}
