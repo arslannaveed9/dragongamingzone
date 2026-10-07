@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { chartTooltip, formatDuration, money, usePoll } from "@/components/admin/client";
+import { api, chartTooltip, formatDuration, money, notifyRefresh, usePoll } from "@/components/admin/client";
 import { parseReportCsv, reportToCsv, type CsvDay } from "@/lib/report-csv";
 
 type Report = {
@@ -65,6 +65,7 @@ export default function ReportsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [imported, setImported] = useState<CsvDay[] | null>(null);
+  const [importing, setImporting] = useState(false);
   const customReady = mode === "custom" && Boolean(from && to);
   const detailUrl = mode === "custom"
     ? (customReady ? `/api/reports?from=${from}&to=${to}` : null)
@@ -91,6 +92,30 @@ export default function ReportsPage() {
     link.download = `gaming-zone-${data.from}-to-${data.to}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
+  }
+
+  async function onLegacyImport(file: File) {
+    setImporting(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const result = await api<{ imported: number; skipped: number; from: string | null; to: string | null; revenue: number }>("/api/reports/import", { method: "POST", body });
+      if (result.imported === 0) {
+        toast.success(result.skipped ? "Those bookings are already in the reports." : "No new bookings were imported.");
+      } else {
+        toast.success(`Imported ${result.imported} bookings${result.from && result.to ? ` from ${result.from} to ${result.to}` : ""}.`);
+        if (result.from && result.to) {
+          setMode("custom");
+          setFrom(result.from);
+          setTo(result.to);
+        }
+      }
+      notifyRefresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not import that report.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   async function onImport(file: File) {
@@ -135,7 +160,7 @@ export default function ReportsPage() {
           </Button>
           <Button onClick={download} disabled={!data}><Download /> Export</Button>
           <label className="inline-flex h-10 cursor-pointer items-center rounded-lg border border-input px-3.5 text-sm font-medium hover:bg-muted">
-            Import
+            Import CSV
             <input
               type="file"
               accept=".csv,text/csv"
@@ -144,6 +169,20 @@ export default function ReportsPage() {
                 const file = event.target.files?.[0];
                 event.target.value = "";
                 if (file) void onImport(file);
+              }}
+            />
+          </label>
+          <label className={`inline-flex h-10 cursor-pointer items-center rounded-lg border border-input px-3.5 text-sm font-medium hover:bg-muted ${importing ? "pointer-events-none opacity-60" : ""}`}>
+            {importing ? "Importing..." : "Import history"}
+            <input
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              className="sr-only"
+              disabled={importing}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void onLegacyImport(file);
               }}
             />
           </label>
