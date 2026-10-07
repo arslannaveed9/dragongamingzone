@@ -98,7 +98,6 @@ export function BookingDialog({
     const bookingId = preset?.bookingId;
     if (!bookingId) {
       setEditingId(null);
-      setBookingNumber("");
       setMode(preset?.mode || "walk_in");
       setStationId(preset?.stationId || "");
       setGamingDay(preset?.gamingDay || "");
