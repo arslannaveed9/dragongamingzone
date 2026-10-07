@@ -121,26 +121,28 @@ export function HomeView({ initial }: { initial: Board | null }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-cyan-900/50 bg-slate-950/95 text-cyan-50 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-3">
-          <Link href="/" className="flex items-center gap-3">
-            {business.logoDataUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={business.logoDataUrl} alt="" className="size-10 rounded-xl object-cover ring-1 ring-cyan-700/60" />
-            ) : (
-              <span className="grid size-10 place-items-center rounded-xl bg-cyan-400 font-heading text-lg font-bold text-slate-950">{business.name.slice(0, 1)}</span>
-            )}
-            <span className="font-heading text-lg font-bold">{business.name}</span>
-          </Link>
-          <nav className="flex flex-1 flex-wrap gap-1 text-sm">
+        <div className="mx-auto max-w-6xl px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex min-w-0 flex-1 items-center gap-2.5">
+              {business.logoDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={business.logoDataUrl} alt="" className="size-9 shrink-0 rounded-xl object-cover ring-1 ring-cyan-700/60 sm:size-10" />
+              ) : (
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-cyan-400 font-heading text-lg font-bold text-slate-950 sm:size-10">{business.name.slice(0, 1)}</span>
+              )}
+              <span className="truncate font-heading text-base font-bold sm:text-lg">{business.name}</span>
+            </Link>
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold sm:px-3 sm:text-sm ${openNow ? "bg-emerald-400/15 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-rose-400/15 text-rose-100 ring-1 ring-rose-400/40"}`}>{openLabel}</span>
+            <ThemeToggle />
+            <Button variant="outline" size="sm" className="shrink-0 border-cyan-700 bg-transparent px-2.5 text-cyan-50 hover:bg-white/10 hover:text-cyan-50 sm:px-3" asChild>
+              <Link href="/login">Staff</Link>
+            </Button>
+          </div>
+          <nav className="mt-3 grid grid-cols-3 gap-1 text-sm">
             {NAV.map(([href, label]) => (
-              <a key={href} href={href} className="rounded-lg px-3 py-2 text-cyan-100 hover:bg-white/10">{label}</a>
+              <a key={href} href={href} className="rounded-lg px-2 py-2 text-center text-cyan-100 hover:bg-white/10">{label}</a>
             ))}
           </nav>
-          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${openNow ? "bg-emerald-400/15 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-rose-400/15 text-rose-100 ring-1 ring-rose-400/40"}`}>{openLabel}</span>
-          <ThemeToggle />
-          <Button variant="outline" size="sm" className="border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50" asChild>
-            <Link href="/login">Staff login</Link>
-          </Button>
         </div>
       </header>
 
@@ -160,30 +162,30 @@ export function HomeView({ initial }: { initial: Board | null }) {
       <section className="relative overflow-hidden bg-slate-950 text-cyan-50">
         <div className="pointer-events-none absolute -top-24 right-0 size-80 rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-0 size-64 rounded-full bg-sky-500/10 blur-3xl" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-[1.4fr_0.8fr] md:py-24">
+        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:py-16 md:grid-cols-[1.4fr_0.8fr] md:py-24">
           <div>
             <p className="gz-kicker text-cyan-300">{openNow ? "The floor is open" : "The floor is closed"}</p>
-            <h1 className="mt-3 max-w-3xl font-heading text-5xl font-bold tracking-tight md:text-7xl">{business.name}</h1>
+            <h1 className="mt-3 max-w-3xl font-heading text-4xl font-bold tracking-tight sm:text-5xl md:text-7xl">{business.name}</h1>
             <p className="mt-5 max-w-xl text-lg text-cyan-100/80">
               {business.description || "Consoles and PCs, live availability, and today's rates in one place."}
             </p>
             <p className="mt-6 text-base text-cyan-100">Open {hoursLabel}{business.address ? ` · ${business.address}` : ""}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button className="bg-cyan-400 text-slate-950 hover:bg-cyan-300" asChild>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button className="w-full bg-cyan-400 text-slate-950 hover:bg-cyan-300 sm:w-auto" asChild>
                 <a href="#floor">See what's free</a>
               </Button>
               {business.phone ? (
-                <Button variant="outline" className="border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50" asChild>
+                <Button variant="outline" className="w-full border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50 sm:w-auto" asChild>
                   <a href={`tel:${business.phone}`}>Call {business.phone}</a>
                 </Button>
               ) : null}
               {whatsapp ? (
-                <Button variant="outline" className="border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50" asChild>
+                <Button variant="outline" className="w-full border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50 sm:w-auto" asChild>
                   <a href={`https://wa.me/${whatsapp}`}>WhatsApp</a>
                 </Button>
               ) : null}
               {!business.phone && !whatsapp ? (
-                <Button variant="outline" className="border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50" asChild>
+                <Button variant="outline" className="w-full border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50 sm:w-auto" asChild>
                   <a href="#visit">Plan a visit</a>
                 </Button>
               ) : null}
@@ -198,11 +200,11 @@ export function HomeView({ initial }: { initial: Board | null }) {
         </div>
       </section>
 
-      <section id="floor" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-16">
+      <section id="floor" className="mx-auto max-w-6xl scroll-mt-28 px-4 py-10 sm:py-16">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="gz-kicker text-cyan-800 dark:text-cyan-300">Live floor</p>
-            <h2 className="mt-2 font-heading text-4xl font-bold">What's on right now</h2>
+            <h2 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">What's on right now</h2>
           </div>
           <p className="text-sm text-muted-foreground">Updates on their own. A free station can be started at the counter.</p>
         </div>
@@ -229,7 +231,7 @@ export function HomeView({ initial }: { initial: Board | null }) {
                 </div>
               ) : (
                 <div className="mt-5">
-                  <p className="font-heading text-3xl font-bold tabular-nums">{money(station.pricing.current60, symbol)}<span className="ml-1 text-base font-medium text-muted-foreground">/ hour</span></p>
+                  <p className="font-heading text-2xl font-bold tabular-nums sm:text-3xl">{money(station.pricing.current60, symbol)}<span className="ml-1 text-base font-medium text-muted-foreground">/ hour</span></p>
                   <p className="mt-1 text-sm text-muted-foreground">{money(station.pricing.current30, symbol)} / 30 min{station.pricing.additionalPerHour ? ` · extra controller ${money(station.pricing.additionalPerHour, symbol)} / hour` : ""}</p>
                   {station.pricing.discount30 ? <p className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">{station.pricing.discount30} is on this rate</p> : null}
                 </div>
@@ -240,17 +242,17 @@ export function HomeView({ initial }: { initial: Board | null }) {
         </div>
       </section>
 
-      <section id="schedule" className="scroll-mt-24 border-y border-border bg-card/60">
-        <div className="mx-auto max-w-6xl px-4 py-16">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <section id="schedule" className="scroll-mt-28 border-y border-border bg-card/60">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-16">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div>
               <p className="gz-kicker text-cyan-800 dark:text-cyan-300">Schedule</p>
-              <h2 className="mt-2 font-heading text-4xl font-bold">Today on the floor</h2>
-              <p className="mt-2 max-w-xl text-muted-foreground">Each row is one station, from opening until midnight. The red line is the current time.</p>
+              <h2 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">Today on the floor</h2>
+              <p className="mt-2 max-w-xl text-muted-foreground">Each row is one station, from opening until midnight. Swipe the chart sideways. The red line is the current time.</p>
             </div>
-            <label className="text-sm text-muted-foreground">
+            <label className="w-full text-sm text-muted-foreground sm:w-auto">
               Gaming day
-              <Input type="date" className="mt-1 w-44" value={day || data.gamingDay} onChange={(event) => setDay(event.target.value)} />
+              <Input type="date" className="mt-1 w-full sm:w-44" value={day || data.gamingDay} onChange={(event) => setDay(event.target.value)} />
             </label>
           </div>
           <DayTimeline
@@ -277,11 +279,11 @@ export function HomeView({ initial }: { initial: Board | null }) {
         </div>
       </section>
 
-      <section id="visit" className="scroll-mt-24 bg-slate-950 text-cyan-50">
-        <div className={`mx-auto grid max-w-6xl gap-10 px-4 py-16 ${business.mapsUrl || business.address ? "lg:grid-cols-[1.1fr_0.9fr]" : ""}`}>
+      <section id="visit" className="scroll-mt-28 bg-slate-950 text-cyan-50">
+        <div className={`mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:py-16 ${business.mapsUrl || business.address ? "lg:grid-cols-[1.1fr_0.9fr]" : ""}`}>
           <div>
             <p className="gz-kicker text-cyan-300">Visit</p>
-            <h2 className="mt-2 font-heading text-4xl font-bold">Come play</h2>
+            <h2 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">Come play</h2>
             <dl className="mt-6 space-y-4 text-base">
               <div>
                 <dt className="text-sm text-cyan-200/70">Hours</dt>
@@ -333,9 +335,9 @@ export function HomeView({ initial }: { initial: Board | null }) {
           </div>
         </div>
         <div className="border-t border-cyan-900/60">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-5">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <p className="font-heading text-base font-semibold text-cyan-50">{business.name}</p>
-            <div className="ml-auto flex flex-wrap items-center justify-end gap-4">
+            <div className="flex flex-wrap items-center gap-4 sm:ml-auto sm:justify-end">
               <p className="text-sm text-cyan-100/70">Open {hoursLabel}</p>
               {socials.length > 0 ? (
                 <div className="flex flex-wrap justify-end gap-3">
@@ -403,7 +405,7 @@ function YouTubeIcon() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-white/5 px-4 py-5 ring-1 ring-cyan-800/50">
-      <p className="font-heading text-4xl font-bold tabular-nums">{value}</p>
+      <p className="font-heading text-3xl font-bold tabular-nums sm:text-4xl">{value}</p>
       <p className="mt-1 text-sm text-cyan-100/70">{label}</p>
     </div>
   );

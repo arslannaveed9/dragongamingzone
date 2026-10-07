@@ -50,10 +50,10 @@ export default function BookingsPage() {
         </div>
         <Button onClick={() => openBooking({ mode: "reservation" })}>New booking</Button>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Input className="max-w-xs" placeholder="Name, phone, booking ID" value={q} onChange={(event) => { setQ(event.target.value); setPage(1); }} />
-        <Input type="date" className="w-40" value={gamingDay} onChange={(event) => { setGamingDay(event.target.value); setPage(1); }} />
-        <select className="h-9 rounded-lg border border-input bg-background px-2 text-sm" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
+      <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+        <Input className="w-full sm:max-w-xs" placeholder="Name, phone, booking ID" value={q} onChange={(event) => { setQ(event.target.value); setPage(1); }} />
+        <Input type="date" className="w-full sm:w-40" value={gamingDay} onChange={(event) => { setGamingDay(event.target.value); setPage(1); }} />
+        <select className="h-10 w-full rounded-lg border border-input bg-background px-2 text-sm sm:w-auto" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
           <option value="">All statuses</option>
           {["scheduled", "active", "completed", "cancelled", "no_show"].map((item) => <option key={item} value={item}>{STATUS_LABEL[item]}</option>)}
         </select>

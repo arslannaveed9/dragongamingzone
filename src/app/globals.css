@@ -123,12 +123,18 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
-    font-size: 17px;
+    font-size: 16px;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: clip;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 17px;
+    }
   }
   h1, h2, h3 {
     font-family: var(--font-heading), sans-serif;
@@ -157,7 +163,7 @@
 
 .gz-title {
   font-family: var(--font-heading), sans-serif;
-  font-size: 2rem;
+  font-size: clamp(1.65rem, 6vw, 2rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;

@@ -163,9 +163,9 @@ export function StationBoard() {
             {data ? `Gaming day ${data.gamingDay}${data.closedGap ? " · closed until open" : ""}` : "Loading the floor"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <input type="date" className="h-9 rounded-lg border border-input bg-background px-2 text-sm" value={day || data?.gamingDay || ""} onChange={(event) => setDay(event.target.value)} />
-          <TabsList>
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <input type="date" className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-2 text-sm sm:w-40 sm:flex-none" value={day || data?.gamingDay || ""} onChange={(event) => setDay(event.target.value)} />
+          <TabsList className="h-10">
             <TabsTrigger value="floor">Grid</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>

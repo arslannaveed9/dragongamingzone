@@ -20,7 +20,7 @@ export default function CustomerDetailPage() {
         <h1 className="text-xl font-semibold">{customer.name}</h1>
         <p className="text-sm text-muted-foreground">{customer.phone || "No phone"} {customer.email}</p>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Bookings</p><p className="text-lg font-semibold">{customer.stats.totalBookings}</p></div>
         <div className="rounded-xl border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Play time</p><p className="text-lg font-semibold">{formatDuration(customer.stats.totalMinutes)}</p></div>
         <div className="rounded-xl border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Spending</p><p className="text-lg font-semibold">{money(customer.stats.totalSpent)}</p></div>

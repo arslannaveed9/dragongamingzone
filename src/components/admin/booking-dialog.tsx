@@ -393,7 +393,7 @@ export function BookingDialog({
             </div>
           )}
           {quote && (
-            <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2.5">
+            <div className="flex flex-col gap-1 rounded-lg bg-muted/60 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 {formatDuration(duration)}
                 {quote.controllerAmount > 0 ? ` · ${Math.max(1, controllers - 1)} controller${controllers > 2 ? "s" : ""} ${money(quote.controllerAmount, symbol)}` : ""}
@@ -403,7 +403,7 @@ export function BookingDialog({
             </div>
           )}
           {!editingId && (
-            <div className="grid grid-cols-[auto_1fr_7.5rem] items-center gap-2">
+            <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr_7.5rem]">
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={takePayment} onChange={(event) => setTakePayment(event.target.checked)} />
                 Paid

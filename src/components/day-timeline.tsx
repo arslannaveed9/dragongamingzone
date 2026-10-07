@@ -43,10 +43,10 @@ export function DayTimeline({
   const showNow = nowRatio != null && nowRatio >= 0 && nowRatio <= 1;
   const segments = Math.max(1, ticks.length - 1);
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-card">
-      <div className="min-w-[1480px]">
-        <div className="grid grid-cols-[7.5rem_1fr] border-b border-border text-[11px] text-muted-foreground">
-          <div className="px-3 py-2">Station</div>
+    <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-border bg-card">
+      <div className="min-w-[72rem] lg:min-w-[92rem]">
+        <div className="grid grid-cols-[5.5rem_1fr] border-b border-border text-[11px] text-muted-foreground sm:grid-cols-[7.5rem_1fr]">
+          <div className="sticky left-0 z-20 bg-card px-3 py-2">Station</div>
           <div className="relative h-10">
             {ticks.map((tick) => (
               <span key={`${tick.label}-${tick.ratio}`} className="absolute top-4 whitespace-nowrap" style={tickStyle(tick.ratio)}>
@@ -61,8 +61,8 @@ export function DayTimeline({
           </div>
         </div>
         {rows.map((row) => (
-          <div key={row.id} className="grid grid-cols-[7.5rem_1fr] border-b border-border last:border-b-0">
-            <div className="flex items-center px-3 text-sm font-medium">{row.name}</div>
+          <div key={row.id} className="grid grid-cols-[5.5rem_1fr] border-b border-border last:border-b-0 sm:grid-cols-[7.5rem_1fr]">
+            <div className="sticky left-0 z-20 flex items-center bg-card px-3 text-sm font-medium">{row.name}</div>
             <div
               className={`relative h-12 ${onEmptyClick ? "cursor-pointer" : ""}`}
               style={{ backgroundImage: "linear-gradient(to right, var(--border) 1px, transparent 1px)", backgroundSize: `${100 / segments}% 100%` }}

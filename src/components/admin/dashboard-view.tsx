@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { chartTooltip, figure, formatDuration, notifyRefresh, openBooking, usePoll, api } from "@/components/admin/client";
+import { figure, formatDuration, notifyRefresh, openBooking, usePoll, api } from "@/components/admin/client";
 import { FiguresLock } from "@/components/admin/figures-lock";
 import { StationBoard } from "@/components/admin/station-board";
 import { StatusPill } from "@/components/admin/status-pill";
@@ -29,7 +28,6 @@ type DashboardData = {
   }[];
   upcoming: { id: string; bookingNumber: string; customerName: string; stationName: string; startAt: string; durationMinutes: number; gamingDay: string }[];
   recent: { id: string; bookingNumber: string; customerName: string; stationName: string; status: string; finalAmount: number | null }[];
-  trend: { gamingDay: string; revenue: number | null; hours: number }[];
   inquiries: { id: string; name: string; message: string }[];
 };
 
@@ -65,40 +63,22 @@ export function DashboardView() {
           <h1 className="gz-title">Dashboard</h1>
           <p className="mt-1 text-base text-muted-foreground">Gaming day {data.gamingDay}{data.closedGap ? " · outside operating hours" : ""}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <FiguresLock unlocked={data.figures.unlocked} configured={data.figures.configured} />
-          <Button onClick={() => openBooking({ mode: "walk_in" })}>New walk-in</Button>
-          <Button variant="outline" onClick={() => openBooking({ mode: "reservation", gamingDay: data.gamingDay })}>New booking</Button>
+          <Button className="flex-1 sm:flex-none" onClick={() => openBooking({ mode: "walk_in" })}>New walk-in</Button>
+          <Button className="flex-1 sm:flex-none" variant="outline" onClick={() => openBooking({ mode: "reservation", gamingDay: data.gamingDay })}>New booking</Button>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {cards.map(([label, value, wash]) => (
           <div key={label} className={`gz-panel border-l-4 ${wash} px-4 py-4`}>
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="mt-1 font-heading text-3xl font-bold tabular-nums text-foreground">{value}</p>
+            <p className="mt-1 font-heading text-2xl font-bold tabular-nums text-foreground sm:text-3xl">{value}</p>
           </div>
         ))}
       </div>
       <StationBoard />
-      <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <h2 className="mb-3 font-heading text-lg font-semibold">Revenue, last 7 gaming days</h2>
-          {data.figures.unlocked ? (
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.trend}>
-                  <XAxis dataKey="gamingDay" tick={{ fill: "oklch(0.74 0.015 250)", fontSize: 11 }} tickFormatter={(value) => String(value).slice(5)} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "oklch(0.74 0.015 250)", fontSize: 11 }} width={40} axisLine={false} tickLine={false} />
-                  <Tooltip {...chartTooltip} />
-                  <Bar dataKey="revenue" fill="var(--chart-1)" radius={4} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <p className="flex h-52 items-center justify-center text-sm text-muted-foreground">Hidden until the figures password is entered.</p>
-          )}
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
+      <div className="rounded-xl border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-medium">Active sessions</h2>
           <div className="space-y-2">
             {data.activeSessions.length === 0 && <p className="text-sm text-muted-foreground">Nobody is playing right now.</p>}
@@ -112,7 +92,6 @@ export function DashboardView() {
               </div>
             ))}
           </div>
-        </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-xl border border-border bg-card p-4">

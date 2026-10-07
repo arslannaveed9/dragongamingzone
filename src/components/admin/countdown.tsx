@@ -44,7 +44,7 @@ export function Countdown({
   const note = paused ? "Paused" : overtime ? "Over" : urgent ? "Ending" : "Left";
 
   return (
-    <span className={`inline-flex items-baseline gap-2 rounded-xl px-3.5 py-2 font-heading text-3xl font-bold tabular-nums shadow-md ring-2 ${tone}`}>
+    <span className={`inline-flex max-w-full flex-wrap items-baseline gap-2 rounded-xl px-3 py-2 font-heading text-2xl font-bold tabular-nums shadow-md ring-2 sm:px-3.5 sm:text-3xl ${tone}`}>
       {overtime ? `+${label}` : label}
       <span className="text-xs font-semibold tracking-wide uppercase">{note}</span>
     </span>

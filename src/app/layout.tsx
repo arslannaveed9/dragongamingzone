@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Exo_2, Outfit } from "next/font/google";
+import { brandIconHref } from "@/lib/brand-icon";
 import { cookies } from "next/headers";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,12 +23,18 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     const { getSettings } = await import("@/services/settings-service");
     const settings = await getSettings();
+    const icon = brandIconHref(settings.business.logoDataUrl);
     return {
       title: { default: settings.business.name, template: `%s · ${settings.business.name}` },
       description: settings.business.description || settings.business.name,
+      icons: { icon, apple: icon, shortcut: icon },
     };
   } catch {
-    return { title: "Dragon Gaming Zone", description: "Dragon Gaming Zone" };
+    return {
+      title: "Dragon Gaming Zone",
+      description: "Dragon Gaming Zone",
+      icons: { icon: "/icon" },
+    };
   }
 }
 

@@ -109,29 +109,30 @@ export function AdminShell({
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-sidebar-border bg-sidebar md:block">{nav}</aside>
-      <div className="md:pl-64">
+      <div className="min-w-0 md:pl-64">
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
-          <div className="flex items-center gap-3 px-4 py-3 md:px-6">
+          <div className="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4 md:px-6">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="shrink-0 md:hidden" aria-label="Open menu">
                   <Menu className="size-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
+              <SheetContent side="left" className="w-[min(18rem,88vw)] p-0">
                 <SheetHeader className="sr-only">
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>
                 {nav}
               </SheetContent>
             </Sheet>
-            <div className="flex-1" />
+            <div className="min-w-0 flex-1" />
             <ThemeToggle />
-            <Button onClick={() => openBooking({ mode: "walk_in" })}>
+            <Button size="sm" className="shrink-0 px-2.5 sm:px-3.5" onClick={() => openBooking({ mode: "walk_in" })}>
               <Plus className="size-4" />
-              New walk-in
+              <span className="sm:hidden">Walk-in</span>
+              <span className="hidden sm:inline">New walk-in</span>
             </Button>
           </div>
           {staffNotices && staffNotices.length > 0 && (
@@ -144,7 +145,7 @@ export function AdminShell({
             </div>
           )}
         </header>
-        <main className="px-3 py-4 md:px-6 md:py-6">{children}</main>
+        <main className="min-w-0 px-3 py-4 md:px-6 md:py-6">{children}</main>
       </div>
       <BookingDialog open={bookingOpen} onOpenChange={setBookingOpen} preset={preset} />
     </div>

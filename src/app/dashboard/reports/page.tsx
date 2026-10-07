@@ -158,9 +158,9 @@ export default function ReportsPage() {
         ))}
         {mode === "custom" && (
           <div className="flex flex-wrap items-center gap-2">
-            <Input type="date" aria-label="From gaming day" value={from} onChange={(event) => setFrom(event.target.value)} className="w-44" />
+            <Input type="date" aria-label="From gaming day" value={from} onChange={(event) => setFrom(event.target.value)} className="w-full sm:w-44" />
             <span className="text-muted-foreground">to</span>
-            <Input type="date" aria-label="To gaming day" value={to} onChange={(event) => setTo(event.target.value)} className="w-44" />
+            <Input type="date" aria-label="To gaming day" value={to} onChange={(event) => setTo(event.target.value)} className="w-full sm:w-44" />
           </div>
         )}
       </div>

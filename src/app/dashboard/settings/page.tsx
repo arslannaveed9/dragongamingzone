@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/components/admin/client";
+import { brandIconHref } from "@/lib/brand-icon";
 
 type Settings = {
   business: {
@@ -66,6 +67,16 @@ export default function SettingsPage() {
     try {
       const next = await api<Settings>("/api/settings", { method: "PUT", body: JSON.stringify(settings) });
       setSettings(next);
+      const href = brandIconHref(next.business.logoDataUrl);
+      for (const rel of ["icon", "apple-touch-icon", "shortcut icon"]) {
+        let link = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = rel;
+          document.head.appendChild(link);
+        }
+        link.href = href;
+      }
       toast.success("Settings saved.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save settings.");
