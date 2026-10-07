@@ -1,6 +1,7 @@
 import { AppError } from "@/lib/errors";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { isValidTimezone, parseHm, type OperatingHours } from "@/lib/gaming-day";
+import { emptySeo, type SeoSettings } from "@/lib/seo";
 import { connectDB } from "@/lib/mongodb";
 import { BusinessSettings } from "@/models/settings";
 import { writeAudit } from "@/services/audit-service";
@@ -42,6 +43,7 @@ export type AppSettings = {
     additionalPerHour: number;
     maxControllers: number;
   };
+  seo: SeoSettings;
 };
 
 function plain(doc: { toObject?: () => Record<string, unknown> } & Record<string, unknown>): AppSettings {
@@ -94,6 +96,25 @@ function plain(doc: { toObject?: () => Record<string, unknown> } & Record<string
       additionalPerHour: value.pricingDefaults?.additionalPerHour ?? 0,
       maxControllers: value.pricingDefaults?.maxControllers ?? 4,
     },
+    seo: {
+      ...emptySeo(),
+      ...value.seo,
+      siteUrl: value.seo?.siteUrl || "",
+      title: value.seo?.title || "",
+      description: value.seo?.description || "",
+      keywords: value.seo?.keywords || "",
+      googleVerification: value.seo?.googleVerification || "",
+      index: value.seo?.index !== false,
+      homeTitle: value.seo?.homeTitle || "",
+      homeDescription: value.seo?.homeDescription || "",
+      blogTitle: value.seo?.blogTitle || "",
+      blogDescription: value.seo?.blogDescription || "",
+      noticesTitle: value.seo?.noticesTitle || "",
+      noticesDescription: value.seo?.noticesDescription || "",
+      tournamentsTitle: value.seo?.tournamentsTitle || "",
+      tournamentsDescription: value.seo?.tournamentsDescription || "",
+      ogImageDataUrl: value.seo?.ogImageDataUrl || "",
+    },
   };
 }
 
@@ -126,6 +147,12 @@ export function validateSettings(input: AppSettings) {
   if (input.business.logoDataUrl && !input.business.logoDataUrl.startsWith("data:image/")) {
     throw new AppError(400, "LOGO", "Logo must be an image file.");
   }
+  if (input.seo.siteUrl && !/^https?:\/\/.+/i.test(input.seo.siteUrl)) {
+    throw new AppError(400, "SEO", "The public site URL must start with http:// or https://.");
+  }
+  if (input.seo.ogImageDataUrl && !input.seo.ogImageDataUrl.startsWith("data:image/")) {
+    throw new AppError(400, "SEO", "The share image must be an image file.");
+  }
 }
 
 export async function updateSettings(input: AppSettings, actor: Actor) {
@@ -135,13 +162,23 @@ export async function updateSettings(input: AppSettings, actor: Actor) {
   const next = await getSettings();
   const { logoDataUrl: previousLogo, ...previousBusiness } = previous.business;
   const { logoDataUrl: nextLogo, ...nextBusiness } = next.business;
+  const { ogImageDataUrl: previousOg, ...previousSeo } = previous.seo;
+  const { ogImageDataUrl: nextOg, ...nextSeo } = next.seo;
   await writeAudit({
     actor,
     action: "settings.updated",
     entity: "settings",
     entityId: "default",
-    oldValue: { ...previous, business: { ...previousBusiness, logoChanged: Boolean(previousLogo) } },
-    newValue: { ...next, business: { ...nextBusiness, logoChanged: previousLogo !== nextLogo } },
+    oldValue: {
+      ...previous,
+      business: { ...previousBusiness, logoChanged: Boolean(previousLogo) },
+      seo: { ...previousSeo, ogImageChanged: Boolean(previousOg) },
+    },
+    newValue: {
+      ...next,
+      business: { ...nextBusiness, logoChanged: previousLogo !== nextLogo },
+      seo: { ...nextSeo, ogImageChanged: previousOg !== nextOg },
+    },
   });
   return next;
 }

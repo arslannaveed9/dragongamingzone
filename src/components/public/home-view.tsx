@@ -11,7 +11,7 @@ import { Countdown } from "@/components/admin/countdown";
 import { DayTimeline } from "@/components/day-timeline";
 import { formatHm, money, usePoll } from "@/components/admin/client";
 import { StatusPill } from "@/components/admin/status-pill";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteHeader } from "@/components/public/site-header";
 
 type Board = {
   serverNow: string;
@@ -51,17 +51,16 @@ type Board = {
   activeDiscounts: { id: string; name: string }[];
 };
 
-const NAV = [
-  ["#floor", "Stations"],
-  ["#schedule", "Today"],
-  ["#visit", "Visit"],
-];
+type GalleryPhoto = { id: string; caption: string };
 
-export function HomeView({ initial }: { initial: Board | null }) {
+export function HomeView({ initial, initialGallery = [] }: { initial: Board | null; initialGallery?: GalleryPhoto[] }) {
   const [day, setDay] = useState("");
   const polled = usePoll<Board>(`/api/public/live${day ? `?gamingDay=${day}` : ""}`, 15000);
   const data = polled.data || (!day ? initial : null);
   const notices = usePoll<{ id: string; title: string; body: string; postedAt: string }[]>("/api/public/notices", 20000);
+  const gallery = usePoll<GalleryPhoto[]>("/api/public/gallery", 60000);
+  const photos = gallery.data ?? initialGallery;
+  const [photoOpen, setPhotoOpen] = useState<GalleryPhoto | null>(null);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const notice = notices.data?.[0];
   const noticeRef = useRef(notice);
@@ -120,31 +119,7 @@ export function HomeView({ initial }: { initial: Board | null }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-cyan-900/50 bg-slate-950/95 text-cyan-50 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex min-w-0 flex-1 items-center gap-2.5">
-              {business.logoDataUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={business.logoDataUrl} alt="" className="size-9 shrink-0 rounded-xl object-cover ring-1 ring-cyan-700/60 sm:size-10" />
-              ) : (
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-cyan-400 font-heading text-lg font-bold text-slate-950 sm:size-10">{business.name.slice(0, 1)}</span>
-              )}
-              <span className="truncate font-heading text-base font-bold sm:text-lg">{business.name}</span>
-            </Link>
-            <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold sm:px-3 sm:text-sm ${openNow ? "bg-emerald-400/15 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-rose-400/15 text-rose-100 ring-1 ring-rose-400/40"}`}>{openLabel}</span>
-            <ThemeToggle />
-            <Button variant="outline" size="sm" className="shrink-0 border-cyan-700 bg-transparent px-2.5 text-cyan-50 hover:bg-white/10 hover:text-cyan-50 sm:px-3" asChild>
-              <Link href="/login">Staff</Link>
-            </Button>
-          </div>
-          <nav className="mt-3 grid grid-cols-3 gap-1 text-sm">
-            {NAV.map(([href, label]) => (
-              <a key={href} href={href} className="rounded-lg px-2 py-2 text-center text-cyan-100 hover:bg-white/10">{label}</a>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <SiteHeader home name={business.name} logo={business.logoDataUrl} openLabel={openLabel} open={openNow} showGallery={photos.length > 0} />
 
       <Dialog open={noticeOpen && Boolean(notice)} onOpenChange={setNoticeOpen}>
         <DialogContent>
@@ -199,6 +174,41 @@ export function HomeView({ initial }: { initial: Board | null }) {
           </div>
         </div>
       </section>
+
+      {photos.length > 0 ? (
+        <section id="gallery" className="scroll-mt-28 border-b border-border">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:py-16">
+            <p className="gz-kicker text-cyan-800 dark:text-cyan-300">Gallery</p>
+            <h2 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">Inside {business.name}</h2>
+            <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
+              {photos.map((photo) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() => setPhotoOpen(photo)}
+                  className="overflow-hidden rounded-2xl border border-border bg-card text-left"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/public/gallery/${photo.id}`} alt={photo.caption || business.name} className="aspect-[4/3] w-full object-cover" />
+                  {photo.caption ? <span className="block px-3 py-2 text-sm text-muted-foreground">{photo.caption}</span> : null}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <Dialog open={Boolean(photoOpen)} onOpenChange={(open) => { if (!open) setPhotoOpen(null); }}>
+        <DialogContent className="sm:max-w-3xl">
+          {photoOpen ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/api/public/gallery/${photoOpen.id}`} alt={photoOpen.caption || business.name} className="max-h-[70dvh] w-full rounded-lg object-contain" />
+              {photoOpen.caption ? <p className="text-base">{photoOpen.caption}</p> : null}
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <section id="floor" className="mx-auto max-w-6xl scroll-mt-28 px-4 py-10 sm:py-16">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-3">

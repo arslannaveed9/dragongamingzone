@@ -11,7 +11,7 @@ describe("staff page plan", () => {
 
   it("keeps setup and finance pages off the staff sidebar", () => {
     const labels = pagesForRole("staff").map((page) => page.label);
-    for (const hidden of ["Stations", "Customers", "Reports", "Pricing", "Discounts", "POS", "Settings", "Audit Logs", "Users"]) {
+    for (const hidden of ["Stations", "Customers", "Reports", "Pricing", "Discounts", "POS", "Settings", "Audit Logs", "Users", "Tournaments"]) {
       expect(labels).not.toContain(hidden);
     }
   });

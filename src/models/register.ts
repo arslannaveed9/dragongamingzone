@@ -13,3 +13,5 @@ import "@/models/product";
 import "@/models/pos";
 import "@/models/contact";
 import "@/models/notice";
+import "@/models/tournament";
+import "@/models/tournament-entry";

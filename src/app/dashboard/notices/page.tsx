@@ -49,9 +49,24 @@ export default function NoticesPage() {
   }
 
   async function setActive(notice: Notice, active: boolean) {
-    await api(`/api/notices/${notice.id}`, { method: "PATCH", body: JSON.stringify({ active }) });
-    notifyRefresh();
-    await reload();
+    try {
+      await api(`/api/notices/${notice.id}`, { method: "PATCH", body: JSON.stringify({ active }) });
+      notifyRefresh();
+      await reload();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update the notice.");
+    }
+  }
+
+  async function remove(notice: Notice) {
+    try {
+      await api(`/api/notices/${notice.id}`, { method: "DELETE" });
+      toast.success("Notice deleted.");
+      notifyRefresh();
+      await reload();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete the notice.");
+    }
   }
 
   return (
@@ -60,7 +75,7 @@ export default function NoticesPage() {
         <p className="gz-kicker text-cyan-800 dark:text-cyan-200">Messages</p>
         <h1 className="gz-title">Notices</h1>
         <p className="mt-2 max-w-3xl text-base text-muted-foreground">
-          A staff notice shows at the top of this panel for everyone signed in. A public notice shows on the website notices page. Older notices stay here after you hide them.
+          A staff notice shows at the top of this panel for everyone signed in. A public notice shows on the website. Hide keeps it in this list. Delete removes it.
         </p>
       </div>
 
@@ -93,9 +108,12 @@ export default function NoticesPage() {
               <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{notice.body}</p>
               <p className="mt-1 text-xs text-muted-foreground">{notice.postedAt}{notice.authorName ? ` · ${notice.authorName}` : ""}</p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => void setActive(notice, !notice.active)}>
-              {notice.active ? "Hide" : "Show again"}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => void setActive(notice, !notice.active)}>
+                {notice.active ? "Hide" : "Show again"}
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => void remove(notice)}>Delete</Button>
+            </div>
           </article>
         ))}
         {data?.length === 0 && <p className="text-sm text-muted-foreground">No notices yet.</p>}

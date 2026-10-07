@@ -6,7 +6,10 @@ import { useEffect, useState } from "react";
 import {
   ClipboardList,
   Gamepad2,
+  Images,
   LayoutDashboard,
+  Newspaper,
+  Trophy,
   LogOut,
   Megaphone,
   Menu,
@@ -34,6 +37,9 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
   "/dashboard/pricing": Tags,
   "/dashboard/discounts": Percent,
   "/dashboard/notices": Megaphone,
+  "/dashboard/tournaments": Trophy,
+  "/dashboard/gallery": Images,
+  "/dashboard/blog": Newspaper,
   "/dashboard/settings": Settings,
   "/dashboard/audit": ScrollText,
   "/dashboard/users": Users,
@@ -77,11 +83,11 @@ export function AdminShell({
   }
 
   const nav = (
-    <div className="flex h-full flex-col">
-      <div className="m-3 rounded-2xl bg-slate-950 p-4 text-cyan-50 ring-1 ring-cyan-700/50">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="m-3 shrink-0 rounded-2xl bg-slate-950 p-4 text-cyan-50 ring-1 ring-cyan-700/50">
         <p className="font-heading text-xl font-bold leading-tight">{businessName}</p>
       </div>
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 pb-2">
         {links.map((link) => {
           const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
           const Icon = link.icon;
@@ -97,7 +103,7 @@ export function AdminShell({
           );
         })}
       </nav>
-      <div className="border-t border-border p-3">
+      <div className="shrink-0 border-t border-border p-3">
         <p className="truncate text-sm font-medium">{user.name}</p>
         <p className="truncate text-xs capitalize text-muted-foreground">{user.role}</p>
         <Button variant="ghost" size="sm" className="mt-2 w-full justify-start" onClick={logout}>
@@ -110,7 +116,7 @@ export function AdminShell({
 
   return (
     <div className="min-h-screen overflow-x-clip bg-background text-foreground">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-sidebar-border bg-sidebar md:block">{nav}</aside>
+      <aside className="fixed inset-y-0 left-0 hidden w-64 overflow-hidden border-r border-sidebar-border bg-sidebar md:block">{nav}</aside>
       <div className="min-w-0 md:pl-64">
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4 md:px-6">
@@ -120,7 +126,7 @@ export function AdminShell({
                   <Menu className="size-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[min(18rem,88vw)] p-0">
+              <SheetContent side="left" className="w-[min(18rem,88vw)] gap-0 overflow-hidden p-0">
                 <SheetHeader className="sr-only">
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>

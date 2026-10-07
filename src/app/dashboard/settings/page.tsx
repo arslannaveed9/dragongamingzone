@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/components/admin/client";
 import { brandIconHref } from "@/lib/brand-icon";
+import { emptySeo, type SeoSettings } from "@/lib/seo";
 
 type Settings = {
   business: {
@@ -33,6 +34,7 @@ type Settings = {
   };
   system: { currency: string; currencySymbol: string; dateFormat: "dd MMM yyyy" | "yyyy-MM-dd" | "dd/MM/yyyy"; timeFormat: "12h" | "24h" };
   pricingDefaults: { per30Min: number; perHour: number; additionalPer30Min: number; additionalPerHour: number; maxControllers: number };
+  seo: SeoSettings;
 };
 
 export default function SettingsPage() {
@@ -42,7 +44,9 @@ export default function SettingsPage() {
   const [figuresSet, setFiguresSet] = useState(false);
 
   useEffect(() => {
-    api<Settings>("/api/settings").then(setSettings).catch((error) => toast.error(error.message));
+    api<Settings>("/api/settings")
+      .then((value) => setSettings({ ...value, seo: { ...emptySeo(), ...value.seo } }))
+      .catch((error) => toast.error(error.message));
     api<{ user: { role: string } | null }>("/api/auth/me")
       .then((me) => setOwner(me.user?.role === "owner"))
       .catch(() => setOwner(false));
@@ -181,6 +185,63 @@ export default function SettingsPage() {
           <Field label="Default 30 min"><Input type="number" value={settings.pricingDefaults.per30Min} onChange={(event) => setSettings({ ...settings, pricingDefaults: { ...settings.pricingDefaults, per30Min: Number(event.target.value) } })} /></Field>
           <Field label="Default hour"><Input type="number" value={settings.pricingDefaults.perHour} onChange={(event) => setSettings({ ...settings, pricingDefaults: { ...settings.pricingDefaults, perHour: Number(event.target.value) } })} /></Field>
         </div>
+      </section>
+      <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <h2 className="font-medium">Search engines</h2>
+        <p className="text-sm text-muted-foreground">These titles and descriptions are what Google and shared links use. Leave a page title blank to use the site title.</p>
+        <Field label="Public site URL">
+          <Input value={settings.seo.siteUrl} placeholder="https://your-domain.com" onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, siteUrl: event.target.value } })} />
+        </Field>
+        <p className="text-sm text-muted-foreground">The full address of this website, with https. It builds the sitemap and the canonical link on each page.</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label="Site title">
+            <Input value={settings.seo.title} maxLength={70} placeholder={business.name} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, title: event.target.value } })} />
+          </Field>
+          <Field label="Keywords">
+            <Input value={settings.seo.keywords} placeholder="gaming zone, ps5, karachi" onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, keywords: event.target.value } })} />
+          </Field>
+        </div>
+        <Field label="Site description">
+          <Input value={settings.seo.description} maxLength={300} placeholder={business.description} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, description: event.target.value } })} />
+        </Field>
+        <Field label="Google Search Console code">
+          <Input value={settings.seo.googleVerification} placeholder="Paste the verification content value" onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, googleVerification: event.target.value } })} />
+        </Field>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={settings.seo.index} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, index: event.target.checked } })} />
+          Let search engines index the public site
+        </label>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label="Home title"><Input value={settings.seo.homeTitle} maxLength={70} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, homeTitle: event.target.value } })} /></Field>
+          <Field label="Home description"><Input value={settings.seo.homeDescription} maxLength={300} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, homeDescription: event.target.value } })} /></Field>
+          <Field label="Blog title"><Input value={settings.seo.blogTitle} maxLength={70} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, blogTitle: event.target.value } })} /></Field>
+          <Field label="Blog description"><Input value={settings.seo.blogDescription} maxLength={300} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, blogDescription: event.target.value } })} /></Field>
+          <Field label="Notices title"><Input value={settings.seo.noticesTitle} maxLength={70} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, noticesTitle: event.target.value } })} /></Field>
+          <Field label="Notices description"><Input value={settings.seo.noticesDescription} maxLength={300} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, noticesDescription: event.target.value } })} /></Field>
+          <Field label="Tournaments title"><Input value={settings.seo.tournamentsTitle} maxLength={70} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, tournamentsTitle: event.target.value } })} /></Field>
+          <Field label="Tournaments description"><Input value={settings.seo.tournamentsDescription} maxLength={300} onChange={(event) => setSettings({ ...settings, seo: { ...settings.seo, tournamentsDescription: event.target.value } })} /></Field>
+        </div>
+        <Field label="Share image">
+          <Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (!file || !settings) return;
+            if (file.size > 400_000) {
+              toast.error("Use a share image smaller than 400 KB.");
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => setSettings({ ...settings, seo: { ...settings.seo, ogImageDataUrl: String(reader.result || "") } });
+            reader.readAsDataURL(file);
+          }} />
+        </Field>
+        {settings.seo.ogImageDataUrl ? (
+          <div className="space-y-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={settings.seo.ogImageDataUrl} alt="" className="aspect-[1.91/1] w-full max-w-sm rounded-lg object-cover" />
+            <Button type="button" variant="outline" onClick={() => setSettings({ ...settings, seo: { ...settings.seo, ogImageDataUrl: "" } })}>Remove share image</Button>
+          </div>
+        ) : <p className="text-sm text-muted-foreground">Used when a page is shared. If you leave this empty, the logo is used.</p>}
       </section>
       {owner && (
         <section className="space-y-3 rounded-xl border border-border bg-card p-4">

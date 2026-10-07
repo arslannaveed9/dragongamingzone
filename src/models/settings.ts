@@ -51,6 +51,23 @@ const settingsSchema = new Schema(
       maxControllers: { type: Number, default: 4 },
     },
     figuresPasswordHash: { type: String, default: "", select: false },
+    seo: {
+      siteUrl: { type: String, default: "" },
+      title: { type: String, default: "" },
+      description: { type: String, default: "" },
+      keywords: { type: String, default: "" },
+      googleVerification: { type: String, default: "" },
+      index: { type: Boolean, default: true },
+      homeTitle: { type: String, default: "" },
+      homeDescription: { type: String, default: "" },
+      blogTitle: { type: String, default: "" },
+      blogDescription: { type: String, default: "" },
+      noticesTitle: { type: String, default: "" },
+      noticesDescription: { type: String, default: "" },
+      tournamentsTitle: { type: String, default: "" },
+      tournamentsDescription: { type: String, default: "" },
+      ogImageDataUrl: { type: String, default: "" },
+    },
   },
   { timestamps: true },
 );
@@ -65,5 +82,35 @@ if (!BusinessSettings.schema.path("publicHours")) {
       start: { type: String, default: "" },
       end: { type: String, default: "" },
     },
+  });
+}
+
+if (!BusinessSettings.schema.path("seo")) {
+  BusinessSettings.schema.add({
+    seo: {
+      siteUrl: { type: String, default: "" },
+      title: { type: String, default: "" },
+      description: { type: String, default: "" },
+      keywords: { type: String, default: "" },
+      googleVerification: { type: String, default: "" },
+      index: { type: Boolean, default: true },
+      homeTitle: { type: String, default: "" },
+      homeDescription: { type: String, default: "" },
+      blogTitle: { type: String, default: "" },
+      blogDescription: { type: String, default: "" },
+      noticesTitle: { type: String, default: "" },
+      noticesDescription: { type: String, default: "" },
+      tournamentsTitle: { type: String, default: "" },
+      tournamentsDescription: { type: String, default: "" },
+      ogImageDataUrl: { type: String, default: "" },
+    },
+  });
+}
+
+const seoPath = BusinessSettings.schema.path("seo");
+if (seoPath && "schema" in seoPath && seoPath.schema && !seoPath.schema.path("tournamentsTitle")) {
+  seoPath.schema.add({
+    tournamentsTitle: { type: String, default: "" },
+    tournamentsDescription: { type: String, default: "" },
   });
 }

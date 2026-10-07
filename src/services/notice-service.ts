@@ -84,3 +84,16 @@ export async function setNoticeActive(id: string, active: boolean, actor: Actor)
   const settings = await getSettings();
   return plain(existing, settings.operatingHours.timezone);
 }
+
+export async function removeNotice(id: string, actor: Actor) {
+  const existing = await Notice.findByIdAndDelete(id);
+  if (!existing) throw new AppError(404, "NOT_FOUND", "Notice not found.");
+  await writeAudit({
+    actor,
+    action: "notice.deleted",
+    entity: "notice",
+    entityId: id,
+    oldValue: { audience: existing.audience, title: existing.title },
+  });
+  return { id };
+}

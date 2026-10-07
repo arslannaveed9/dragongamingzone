@@ -5,6 +5,8 @@ import { getSettings } from "@/services/settings-service";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function LoginPage() {
   const user = await getSessionActor();
   if (user) redirect("/dashboard");

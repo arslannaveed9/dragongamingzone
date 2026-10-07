@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePoll } from "@/components/admin/client";
-import { PublicHeader, PublicShell } from "@/components/public/public-frame";
+import { PublicShell } from "@/components/public/public-frame";
+import { SiteHeader } from "@/components/public/site-header";
 
 type Notice = { id: string; title: string; body: string; postedAt: string };
 type Live = {
@@ -19,14 +20,9 @@ export function NoticesView() {
   const open = Boolean(live.data?.withinHours && !live.data.closedGap);
 
   return (
-    <PublicShell>
-      <PublicHeader
-        name={name}
-        logo={business?.logoDataUrl || ""}
-        description={business?.description || ""}
-        openLabel={live.data ? (open ? "Open now" : "Closed") : "Floor"}
-        open={open}
-      />
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteHeader name={name} logo={business?.logoDataUrl || ""} openLabel={live.data ? (open ? "Open now" : "Closed") : undefined} open={open} />
+      <PublicShell>
       <section className="mt-8">
         <p className="gz-kicker text-cyan-700 dark:text-cyan-300">From the floor</p>
         <h1 className="gz-title">Notices</h1>
@@ -49,6 +45,7 @@ export function NoticesView() {
           </div>
         )}
       </section>
-    </PublicShell>
+      </PublicShell>
+    </div>
   );
 }

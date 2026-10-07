@@ -9,6 +9,8 @@ import { getSettings } from "@/services/settings-service";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   await connectDB();
   await ensureBootstrap();

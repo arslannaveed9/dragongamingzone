@@ -213,6 +213,39 @@ export const settingsSchema = z.object({
     additionalPerHour: z.number().min(0).max(1_000_000),
     maxControllers: z.number().int().min(1).max(12),
   }),
+  seo: z.object({
+    siteUrl: z.string().trim().max(200).optional().default(""),
+    title: z.string().trim().max(70).optional().default(""),
+    description: z.string().trim().max(300).optional().default(""),
+    keywords: z.string().trim().max(300).optional().default(""),
+    googleVerification: z.string().trim().max(120).optional().default(""),
+    index: z.boolean().optional().default(true),
+    homeTitle: z.string().trim().max(70).optional().default(""),
+    homeDescription: z.string().trim().max(300).optional().default(""),
+    blogTitle: z.string().trim().max(70).optional().default(""),
+    blogDescription: z.string().trim().max(300).optional().default(""),
+    noticesTitle: z.string().trim().max(70).optional().default(""),
+    noticesDescription: z.string().trim().max(300).optional().default(""),
+    tournamentsTitle: z.string().trim().max(70).optional().default(""),
+    tournamentsDescription: z.string().trim().max(300).optional().default(""),
+    ogImageDataUrl: z.string().max(700_000).optional().default(""),
+  }).optional().default({
+    siteUrl: "",
+    title: "",
+    description: "",
+    keywords: "",
+    googleVerification: "",
+    index: true,
+    homeTitle: "",
+    homeDescription: "",
+    blogTitle: "",
+    blogDescription: "",
+    noticesTitle: "",
+    noticesDescription: "",
+    tournamentsTitle: "",
+    tournamentsDescription: "",
+    ogImageDataUrl: "",
+  }),
 });
 
 export const userSchema = z.object({
@@ -249,6 +282,112 @@ export const posOrderSchema = z.object({
   paymentMethod: paymentMethodSchema,
   notes: z.string().trim().max(500).optional().default(""),
 });
+
+export const galleryPhotoSchema = z.object({
+  dataUrl: z.string().max(1_400_000).refine((value) => value.startsWith("data:image/"), "Choose a JPG, PNG, or WebP photo."),
+  caption: z.string().trim().max(120).optional().default(""),
+});
+
+export const galleryUpdateSchema = z.object({
+  caption: z.string().trim().max(120).optional(),
+  direction: z.enum(["earlier", "later"]).optional(),
+}).refine((value) => value.caption !== undefined || value.direction, "Nothing to change.");
+
+const coverField = z.string().max(1_400_000).refine((value) => value === "" || value.startsWith("data:image/"), "Choose a JPG, PNG, or WebP photo.");
+
+const blogFields = {
+  title: z.string().trim().min(1).max(140),
+  slug: z.string().trim().max(80).optional().default(""),
+  excerpt: z.string().trim().max(300).optional().default(""),
+  body: z.string().trim().min(1).max(20_000),
+  authorName: z.string().trim().max(80).optional().default(""),
+  tags: z.array(z.string().trim().max(24)).max(8).optional().default([]),
+  featured: z.boolean().optional().default(false),
+  seoTitle: z.string().trim().max(70).optional().default(""),
+  seoDescription: z.string().trim().max(160).optional().default(""),
+  published: z.boolean().optional().default(true),
+};
+
+export const blogSchema = z.object({
+  ...blogFields,
+  coverDataUrl: coverField.optional().default(""),
+});
+
+export const blogUpdateSchema = z.object({
+  ...blogFields,
+  coverDataUrl: coverField.optional(),
+  published: z.boolean(),
+});
+
+const whenField = z.string().trim().max(40);
+
+const tournamentFields = {
+  title: z.string().trim().min(1).max(120),
+  slug: z.string().trim().max(80).optional().default(""),
+  game: z.string().trim().min(1).max(80),
+  format: z.enum(["solo", "team"]).optional().default("solo"),
+  teamSize: z.number().int().min(1).max(20).optional().default(1),
+  summary: z.string().trim().max(300).optional().default(""),
+  rules: z.string().trim().max(8_000).optional().default(""),
+  startsAt: whenField.min(1),
+  endsAt: whenField.min(1),
+  checkInAt: whenField.optional().default(""),
+  entryOpensAt: whenField.optional().default(""),
+  entryClosesAt: whenField.optional().default(""),
+  entryFee: z.number().min(0).max(1_000_000),
+  lateEntryFee: z.number().min(0).max(1_000_000).optional().default(0),
+  lateEntryClosesAt: whenField.optional().default(""),
+  maxEntries: z.number().int().min(0).max(500).optional().default(0),
+  entriesTaken: z.number().int().min(0).max(500).optional().default(0),
+  prizePool: z.number().min(0).max(10_000_000).optional().default(0),
+  prizeFirst: z.string().trim().max(120).optional().default(""),
+  prizeSecond: z.string().trim().max(120).optional().default(""),
+  prizeThird: z.string().trim().max(120).optional().default(""),
+  prizeFirstAmount: z.number().min(0).max(10_000_000).optional().default(0),
+  prizeSecondAmount: z.number().min(0).max(10_000_000).optional().default(0),
+  prizeThirdAmount: z.number().min(0).max(10_000_000).optional().default(0),
+  otherCost: z.number().min(0).max(10_000_000).optional().default(0),
+  otherCostNote: z.string().trim().max(200).optional().default(""),
+  joinNote: z.string().trim().max(300).optional().default(""),
+  published: z.boolean().optional().default(true),
+  cancelled: z.boolean().optional().default(false),
+  featured: z.boolean().optional().default(false),
+};
+
+export const tournamentSchema = z.object({
+  ...tournamentFields,
+  posterDataUrl: coverField.optional().default(""),
+});
+
+export const tournamentUpdateSchema = z.object({
+  ...tournamentFields,
+  posterDataUrl: coverField.optional(),
+  published: z.boolean(),
+  cancelled: z.boolean(),
+});
+
+const moneyField = z.number().min(0).max(10_000_000);
+
+export const tournamentBooksSchema = z.object({
+  prizeFirstAmount: moneyField,
+  prizeSecondAmount: moneyField,
+  prizeThirdAmount: moneyField,
+  otherCost: moneyField,
+  otherCostNote: z.string().trim().max(200).optional().default(""),
+});
+
+export const tournamentEntrySchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  phone: z.string().trim().max(40).optional().default(""),
+  teamName: z.string().trim().max(80).optional().default(""),
+  kind: z.enum(["regular", "late"]).optional().default("regular"),
+  feeDue: moneyField,
+  amountPaid: moneyField,
+  place: z.number().int().min(0).max(3).optional().default(0),
+  note: z.string().trim().max(200).optional().default(""),
+});
+
+export const tournamentEntryUpdateSchema = tournamentEntrySchema;
 
 export const contactSchema = z.object({
   name: z.string().trim().min(1).max(80),
