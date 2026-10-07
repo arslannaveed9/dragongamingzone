@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import { AppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
 import { Tournament } from "@/models/tournament";
@@ -165,7 +166,7 @@ async function claimPlace(tournamentId: unknown, place: 0 | 1 | 2 | 3, ignoreId?
   );
 }
 
-async function syncCount(tournamentId: unknown) {
+async function syncCount(tournamentId: Types.ObjectId) {
   const count = await TournamentEntry.countDocuments({ tournamentId });
   await Tournament.updateOne({ _id: tournamentId }, { $set: { entriesTaken: count } });
 }

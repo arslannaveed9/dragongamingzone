@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import type { Types } from "mongoose";
 import { AppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
 import { Tournament } from "@/models/tournament";
@@ -83,7 +84,7 @@ export type PublicTournament = {
 };
 
 type Row = {
-  _id: unknown;
+  _id: Types.ObjectId;
   slug: string;
   title: string;
   game: string;
@@ -258,12 +259,12 @@ function apply(existing: {
   rules: string;
   startsAt: Date;
   endsAt: Date;
-  checkInAt: Date | null;
-  entryOpensAt: Date | null;
-  entryClosesAt: Date | null;
+  checkInAt?: Date | null;
+  entryOpensAt?: Date | null;
+  entryClosesAt?: Date | null;
   entryFee: number;
   lateEntryFee: number;
-  lateEntryClosesAt: Date | null;
+  lateEntryClosesAt?: Date | null;
   maxEntries: number;
   entriesTaken: number;
   prizePool: number;
