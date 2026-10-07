@@ -30,7 +30,7 @@ export default function CustomerDetailPage() {
         {data.bookings.length === 0 && <p className="p-4 text-sm text-muted-foreground">No bookings yet.</p>}
         {data.bookings.map((booking) => (
           <a key={booking.id} href={`/dashboard/bookings/${booking.id}`} className="flex justify-between border-b border-border px-4 py-3 text-sm last:border-0">
-            <span>{booking.bookingNumber} · {booking.stationName} · {booking.gamingDay}</span>
+            <span>{booking.stationName} · {booking.gamingDay}</span>
             <span>{STATUS_LABEL[booking.status]} · {money(booking.finalAmount)}</span>
           </a>
         ))}

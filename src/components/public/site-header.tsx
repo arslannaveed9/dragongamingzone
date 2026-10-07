@@ -78,7 +78,7 @@ export function SiteHeader({
           {known && status ? (
             <span className={`rounded-full px-2.5 py-1 text-xs font-semibold md:px-3 md:text-sm ${isOpen ? "bg-emerald-400/15 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-rose-400/15 text-rose-100 ring-1 ring-rose-400/40"}`}>{status}</span>
           ) : null}
-          <ThemeToggle />
+          <ThemeToggle className="border-cyan-700 bg-transparent text-cyan-50 hover:bg-white/10 hover:text-cyan-50 dark:border-cyan-700 dark:bg-transparent dark:hover:bg-white/10" />
           <Button variant="outline" size="sm" className="shrink-0 border-cyan-700 bg-transparent px-2.5 text-cyan-50 hover:bg-white/10 hover:text-cyan-50 md:px-3" asChild>
             <Link href="/login"><span className="md:hidden">Staff</span><span className="hidden md:inline">Staff login</span></Link>
           </Button>

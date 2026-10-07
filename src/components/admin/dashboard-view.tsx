@@ -112,7 +112,7 @@ export function DashboardView() {
           {data.recent.length === 0 && <p className="text-sm text-muted-foreground">No bookings yet today.</p>}
           {data.recent.map((booking) => (
             <Link key={booking.id} href={`/dashboard/bookings/${booking.id}`} className="flex items-center justify-between border-b border-border py-2 text-sm last:border-0">
-              <span>{booking.bookingNumber} · {booking.customerName}</span>
+              <span>{booking.customerName} · {booking.stationName}</span>
               <StatusPill status={booking.status} />
             </Link>
           ))}

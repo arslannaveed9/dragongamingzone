@@ -39,11 +39,11 @@ describe("gaming day boundaries", () => {
     expect(isWithinGamingHours(pkt("2026-09-30T02:59:00"), hours)).toBe(true);
   });
 
-  it("closes the day at 3:00 and stays closed until 9:00", () => {
+  it("closes the day at 3:00 and the date moves to that morning", () => {
     expect(isWithinGamingHours(pkt("2026-09-30T03:00:00"), hours)).toBe(false);
-    expect(getGamingDay(pkt("2026-09-30T03:00:00"), hours)).toBe("2026-09-29");
+    expect(getGamingDay(pkt("2026-09-30T03:00:00"), hours)).toBe("2026-09-30");
     expect(isWithinGamingHours(pkt("2026-09-30T08:59:00"), hours)).toBe(false);
-    expect(getGamingDay(pkt("2026-09-30T08:59:00"), hours)).toBe("2026-09-29");
+    expect(getGamingDay(pkt("2026-09-30T08:59:00"), hours)).toBe("2026-09-30");
     const open = pkt("2026-09-30T09:00:00");
     expect(getGamingDay(open, hours)).toBe("2026-09-30");
     expect(isWithinGamingHours(open, hours)).toBe(true);

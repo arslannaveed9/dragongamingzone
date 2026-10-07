@@ -96,8 +96,8 @@ export default function BookingDetailPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">{booking.bookingNumber}</h1>
-          <p className="text-sm text-muted-foreground">{booking.customerName} · {booking.stationName}</p>
+          <h1 className="text-xl font-semibold">{booking.customerName}</h1>
+          <p className="text-sm text-muted-foreground">{booking.stationName}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => openBooking({ bookingId: booking.id })}>Edit</Button>

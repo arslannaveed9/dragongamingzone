@@ -3,7 +3,6 @@ import {
   getGamingDayEnd,
   getGamingDayInfo,
   getGamingDayStart,
-  getNextGamingDay,
 } from "@/lib/gaming-day";
 import { Discount } from "@/models/discount";
 import { Booking } from "@/models/booking";
@@ -70,7 +69,7 @@ export async function getLiveBoard(gamingDay?: string) {
   const day = gamingDay || info.gamingDay;
   const dayStart = getGamingDayStart(day, settings.operatingHours);
   const dayEnd = getGamingDayEnd(day, settings.operatingHours);
-  const priceAt = info.withinHours ? now : getGamingDayStart(getNextGamingDay(info.gamingDay), settings.operatingHours);
+  const priceAt = info.withinHours ? now : getGamingDayStart(info.gamingDay, settings.operatingHours);
   const [stations, bookings, catalog, discountRows] = await Promise.all([
     Station.find({ operationalStatus: { $ne: "archived" } }).sort({ sortOrder: 1, name: 1 }).populate("typeId").lean(),
     Booking.find({ gamingDay: day, status: { $in: ["scheduled", "active", "completed"] } }).sort({ startAt: 1 }).lean(),
@@ -121,7 +120,7 @@ export async function getLiveBoard(gamingDay?: string) {
         startAt: priceAt,
         durationMinutes: 30,
         controllerCount: 1,
-        gamingDay: info.withinHours ? info.gamingDay : getNextGamingDay(info.gamingDay),
+        gamingDay: info.gamingDay,
         settings,
       },
       catalog,
@@ -134,7 +133,7 @@ export async function getLiveBoard(gamingDay?: string) {
         startAt: priceAt,
         durationMinutes: 60,
         controllerCount: 1,
-        gamingDay: info.withinHours ? info.gamingDay : getNextGamingDay(info.gamingDay),
+        gamingDay: info.gamingDay,
         settings,
       },
       catalog,

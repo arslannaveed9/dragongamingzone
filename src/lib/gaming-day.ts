@@ -8,9 +8,9 @@ import { DateTime } from "luxon";
  * zone's timezone. 03:00–09:00 is a closed gap for the open/closed floor
  * status. Bookings are allowed in that gap and may run past closing.
  *
- * During the closed gap, `getGamingDay()` returns the gaming day that just
- * ended so reports and the floor still have a stable "current" label.
- * `isWithinGamingHours()` is false in that gap.
+ * At 03:00 the label rolls to that calendar date. 03:00–09:00 stays closed.
+ * Play from midnight until 03:00 still belongs to the previous gaming day.
+ * `isWithinGamingHours()` is false in the closed gap.
  *
  * All booking windows, reports, and timelines must use this module.
  */
@@ -28,7 +28,7 @@ export const DEFAULT_OPERATING_HOURS: OperatingHours = {
 };
 
 export type GamingDayInfo = {
-  /** YYYY-MM-DD. During the closed gap this is the gaming day that just ended. */
+  /** YYYY-MM-DD. After 03:00 this is the calendar date, including the closed gap before opening. */
   gamingDay: string;
   withinHours: boolean;
   closedGap: boolean;
@@ -82,7 +82,7 @@ export function getGamingDayInfo(instant: Date, hours: OperatingHours): GamingDa
     };
   }
   return {
-    gamingDay: dateString(local.minus({ days: 1 })),
+    gamingDay: dateString(local),
     withinHours: false,
     closedGap: true,
   };

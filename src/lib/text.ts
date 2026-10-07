@@ -14,3 +14,9 @@ export function normalizePhone(value: string): string {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
+
+/** Old software ids are full UUIDs. Show the first 8 characters; new GZ- numbers stay as they are. */
+export function displayBookingNumber(value: string): string {
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) return value.slice(0, 8);
+  return value;
+}

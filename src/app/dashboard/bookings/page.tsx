@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { formatDuration, money, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
 import { StatusPill } from "@/components/admin/status-pill";
 import { formatClock } from "@/lib/gaming-day";
+import { displayBookingNumber } from "@/lib/text";
 
 type Row = {
   id: string;
@@ -74,7 +75,7 @@ export default function BookingsPage() {
             {data?.items.map((row) => (
               <tr key={row.id} className="border-t border-border hover:bg-muted/30">
                 <td className="px-3 py-2">
-                  <Link className="font-medium text-primary underline-offset-2 hover:underline" href={`/dashboard/bookings/${row.id}`}>{row.bookingNumber}</Link>
+                  <Link className="font-medium text-primary underline-offset-2 hover:underline" href={`/dashboard/bookings/${row.id}`}>{displayBookingNumber(row.bookingNumber)}</Link>
                   <button type="button" className="ml-2 text-xs font-medium text-primary" onClick={() => openBooking({ bookingId: row.id })}>Edit</button>
                 </td>
                 <td className="px-3 py-2">{row.customerName}</td>

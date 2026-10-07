@@ -87,7 +87,6 @@ export function BookingDialog({
   const [quote, setQuote] = useState<Quote | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [bookingNumber, setBookingNumber] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -145,7 +144,6 @@ export function BookingDialog({
         if (cancelled) return;
         const booking = detail.booking;
         setEditingId(booking.id);
-        setBookingNumber(booking.bookingNumber);
         setMode(booking.source === "reservation" ? "reservation" : "walk_in");
         setCustomTime(true);
         setLookup(false);
@@ -274,7 +272,7 @@ export function BookingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingId ? `Edit ${bookingNumber}` : mode === "walk_in" ? "New walk-in" : "New booking"}</DialogTitle>
+          <DialogTitle>{editingId ? `Edit ${customerName}` : mode === "walk_in" ? "New walk-in" : "New booking"}</DialogTitle>
         </DialogHeader>
         <div
           className="grid gap-3"
