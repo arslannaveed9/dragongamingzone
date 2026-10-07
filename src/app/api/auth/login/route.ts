@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     if (!parsed.success) return json({ error: { code: "VALIDATION", message: zodMessage(parsed.error) } }, 400);
     const user = await authenticate(parsed.data.email, parsed.data.password);
     const actor = toActor(user);
-    await createSessionCookie(actor);
+    await createSessionCookie(actor, request);
     await writeAudit({ actor, action: "auth.login", entity: "user", entityId: actor.id });
     return json({ user: actor });
   } catch (error) {

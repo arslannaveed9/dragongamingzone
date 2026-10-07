@@ -4,21 +4,27 @@ import { canManageRole, type Role } from "@/lib/permissions";
 import { User } from "@/models/user";
 import { writeAudit } from "@/services/audit-service";
 import type { Actor } from "@/services/auth-service";
+import { activeSessionCounts, revokeUserSessions } from "@/services/session-service";
 
-function plain(user: { _id: unknown; name: string; email: string; role: Role; active: boolean; lastLoginAt?: Date | null }) {
+function plain(
+  user: { _id: unknown; name: string; email: string; role: Role; active: boolean; lastLoginAt?: Date | null },
+  sessionCount = 0,
+) {
   return {
     id: String(user._id),
     name: user.name,
     email: user.email,
     role: user.role,
     active: user.active,
-    lastLoginAt: user.lastLoginAt ?? null,
+    lastLoginAt: user.lastLoginAt ? new Date(user.lastLoginAt).toISOString() : null,
+    sessionCount,
   };
 }
 
 export async function listUsers() {
   const rows = await User.find().sort({ role: 1, name: 1 }).lean();
-  return rows.map((row) => plain(row as never));
+  const counts = await activeSessionCounts();
+  return rows.map((row) => plain(row as never, counts.get(String((row as { _id: unknown })._id)) || 0));
 }
 
 export async function saveUser(
@@ -49,8 +55,10 @@ export async function saveUser(
     existing.email = email;
     existing.role = input.role;
     existing.active = input.active ?? existing.active;
+    const passwordChanged = Boolean(input.password);
     if (input.password) existing.passwordHash = await hashPassword(input.password);
     await existing.save();
+    if (passwordChanged || existing.active === false) await revokeUserSessions(id, actor);
     await writeAudit({ actor, action: "user.updated", entity: "user", entityId: id, newValue: plain(existing) });
     return plain(existing);
   }

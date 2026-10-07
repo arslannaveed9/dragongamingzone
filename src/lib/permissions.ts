@@ -65,7 +65,7 @@ export const NAV_PAGES: { href: string; label: string; permission: Permission; n
   { href: "/dashboard/notices", label: "Notices", permission: "notices.manage", note: "Messages for staff and the public site" },
   { href: "/dashboard/settings", label: "Settings", permission: "settings.manage", note: "Business info, hours, and currency" },
   { href: "/dashboard/audit", label: "Audit Logs", permission: "audit.view", note: "Who changed bookings, prices, and settings" },
-  { href: "/dashboard/users", label: "Users", permission: "users.manage", note: "Staff accounts and roles" },
+  { href: "/dashboard/users", label: "Users", permission: "users.manage", note: "Accounts, passwords, and login sessions" },
 ];
 
 export const ROLE_LABEL: Record<Role, string> = {

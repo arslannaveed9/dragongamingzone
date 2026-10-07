@@ -6,6 +6,7 @@ export const SESSION_MAX_AGE = 60 * 60 * 12;
 
 export type SessionPayload = {
   sub: string;
+  sid: string;
   role: Role;
   name: string;
   email: string;
@@ -23,6 +24,7 @@ export async function signSession(payload: SessionPayload): Promise<string> {
     throw new Error("AUTH_SECRET must be at least 16 characters.");
   }
   return new SignJWT({
+    sid: payload.sid,
     role: payload.role,
     name: payload.name,
     email: payload.email,
@@ -40,9 +42,11 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
   try {
     const { payload } = await jwtVerify(token, key);
     const role = typeof payload.role === "string" ? payload.role : "";
-    if (!payload.sub || !isRole(role)) return null;
+    const sid = typeof payload.sid === "string" ? payload.sid : "";
+    if (!payload.sub || !sid || !isRole(role)) return null;
     return {
       sub: payload.sub,
+      sid,
       role,
       name: typeof payload.name === "string" ? payload.name : "",
       email: typeof payload.email === "string" ? payload.email : "",
