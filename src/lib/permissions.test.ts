@@ -16,10 +16,11 @@ describe("staff page plan", () => {
     }
   });
 
-  it("lets owners delete a booking and keeps that off staff", () => {
+  it("lets staff delete a booking", () => {
     expect(can("owner", "bookings.delete")).toBe(true);
     expect(can("admin", "bookings.delete")).toBe(true);
-    expect(can("staff", "bookings.delete")).toBe(false);
+    expect(can("manager", "bookings.delete")).toBe(true);
+    expect(can("staff", "bookings.delete")).toBe(true);
   });
 
   it("blocks a staff URL even when the sidebar link is missing", () => {

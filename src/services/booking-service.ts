@@ -129,6 +129,44 @@ export function serializeBooking(booking: {
   };
 }
 
+function auditFields(booking: {
+  customerName: string;
+  customerPhone?: string;
+  stationName: string;
+  stationTypeName: string;
+  gamingDay: string;
+  startAt: Date;
+  endAt: Date;
+  durationMinutes: number;
+  controllerCount: number;
+  status: string;
+  paymentStatus: string;
+  amountPaid?: number;
+  pricing?: { finalAmount?: number };
+  notes?: string;
+  cancelReason?: string;
+  pausedAt?: Date | null;
+}) {
+  return {
+    customerName: booking.customerName,
+    customerPhone: booking.customerPhone || "",
+    stationName: booking.stationName,
+    stationTypeName: booking.stationTypeName,
+    gamingDay: booking.gamingDay,
+    startAt: new Date(booking.startAt).toISOString(),
+    endAt: new Date(booking.endAt).toISOString(),
+    durationMinutes: booking.durationMinutes,
+    controllerCount: booking.controllerCount,
+    status: booking.status,
+    paused: Boolean(booking.pausedAt),
+    paymentStatus: booking.paymentStatus,
+    amountPaid: booking.amountPaid ?? 0,
+    finalAmount: booking.pricing?.finalAmount ?? 0,
+    notes: booking.notes || "",
+    cancelReason: booking.cancelReason || "",
+  };
+}
+
 async function nextBookingNumber(gamingDay: string) {
   const counter = await Counter.findByIdAndUpdate("booking", { $inc: { seq: 1 } }, { upsert: true, new: true });
   const seq = String(counter.seq).padStart(4, "0");
@@ -530,6 +568,7 @@ export async function applyBookingAction(
   const existing = await mustBooking(id);
   return withStationLocks([String(existing.stationId)], async () => {
     const booking = await mustBooking(id);
+    const before = auditFields(booking);
     const now = new Date();
     if (action.type === "cancel") {
       if (booking.status === "cancelled") throw new AppError(400, "INVALID_STATE", "This booking is already cancelled.");
@@ -551,7 +590,8 @@ export async function applyBookingAction(
         action: "booking.cancelled",
         entity: "booking",
         entityId: id,
-        newValue: { reason: booking.cancelReason },
+        oldValue: before,
+        newValue: auditFields(booking),
       });
       return serializeBooking(booking);
     }
@@ -565,7 +605,7 @@ export async function applyBookingAction(
       booking.updatedByName = actor.name;
       await booking.save();
       if (booking.customerId) await refreshCustomerStats(String(booking.customerId));
-      await writeAudit({ actor, action: "booking.no_show", entity: "booking", entityId: id });
+      await writeAudit({ actor, action: "booking.no_show", entity: "booking", entityId: id, oldValue: before, newValue: auditFields(booking) });
       return serializeBooking(booking);
     }
 
@@ -587,12 +627,12 @@ export async function applyBookingAction(
       }
       booking.status = "active";
       if (early) {
-        await saveRepriced(booking, settings, actor, "session.started");
+        await saveRepriced(booking, settings, actor, "session.started", before);
       } else {
         booking.updatedBy = actor.id;
         booking.updatedByName = actor.name;
         await booking.save();
-        await writeAudit({ actor, action: "session.started", entity: "booking", entityId: id });
+        await writeAudit({ actor, action: "session.started", entity: "booking", entityId: id, oldValue: before, newValue: auditFields(booking) });
       }
       return serializeBooking(booking);
     }
@@ -605,7 +645,7 @@ export async function applyBookingAction(
       booking.updatedBy = actor.id;
       booking.updatedByName = actor.name;
       await booking.save();
-      await writeAudit({ actor, action: "session.paused", entity: "booking", entityId: id });
+      await writeAudit({ actor, action: "session.paused", entity: "booking", entityId: id, oldValue: before, newValue: auditFields(booking) });
       return serializeBooking(booking);
     }
 
@@ -634,7 +674,7 @@ export async function applyBookingAction(
       booking.updatedBy = actor.id;
       booking.updatedByName = actor.name;
       await booking.save();
-      await writeAudit({ actor, action: "session.resumed", entity: "booking", entityId: id });
+      await writeAudit({ actor, action: "session.resumed", entity: "booking", entityId: id, oldValue: before, newValue: auditFields(booking) });
       return serializeBooking(booking);
     }
 
@@ -654,7 +694,7 @@ export async function applyBookingAction(
       }
       booking.durationMinutes = newDuration;
       booking.endAt = newEnd;
-      await saveRepriced(booking, settings, actor, "booking.extended");
+      await saveRepriced(booking, settings, actor, "booking.extended", before);
       return serializeBooking(booking);
     }
 
@@ -675,7 +715,7 @@ export async function applyBookingAction(
       }
       booking.durationMinutes = newDuration;
       booking.endAt = newEnd;
-      await saveRepriced(booking, settings, actor, "booking.reduced");
+      await saveRepriced(booking, settings, actor, "booking.reduced", before);
       return serializeBooking(booking);
     }
 
@@ -688,7 +728,7 @@ export async function applyBookingAction(
       booking.updatedByName = actor.name;
       await booking.save();
       if (booking.customerId) await refreshCustomerStats(String(booking.customerId));
-      await writeAudit({ actor, action: "session.ended", entity: "booking", entityId: id, newValue: { held: true } });
+      await writeAudit({ actor, action: "session.ended", entity: "booking", entityId: id, oldValue: before, newValue: auditFields(booking) });
       return serializeBooking(booking);
     }
     if (booking.status !== "active") throw new AppError(400, "INVALID_STATE", "Only an open booking can be ended.");
@@ -703,7 +743,7 @@ export async function applyBookingAction(
     booking.completedAt = now;
     booking.pausedAt = null;
     booking.autoCompleted = false;
-    await saveRepriced(booking, settings, actor, "session.ended");
+    await saveRepriced(booking, settings, actor, "session.ended", before);
     if (booking.customerId) await refreshCustomerStats(String(booking.customerId));
     return serializeBooking(booking);
   });
@@ -721,6 +761,14 @@ async function saveRepriced(
     pricing: { currency?: string; finalAmount?: number };
     paymentStatus: string;
     status: string;
+    customerName: string;
+    customerPhone?: string;
+    stationName: string;
+    stationTypeName: string;
+    endAt: Date;
+    notes?: string;
+    cancelReason?: string;
+    pausedAt?: Date | null;
     updatedBy?: unknown;
     updatedByName?: string;
     save: () => Promise<unknown>;
@@ -728,6 +776,7 @@ async function saveRepriced(
   settings: AppSettings,
   actor: Actor,
   action: string,
+  previous?: ReturnType<typeof auditFields>,
 ) {
   const station = await loadStation(String(booking.stationId));
   const { paymentStatus } = await reprice(booking, station, settings);
@@ -740,7 +789,8 @@ async function saveRepriced(
     action,
     entity: "booking",
     entityId: String(booking._id),
-    newValue: { durationMinutes: booking.durationMinutes, finalAmount: booking.pricing.finalAmount, status: booking.status },
+    oldValue: previous ?? null,
+    newValue: auditFields(booking),
   });
 }
 
@@ -770,6 +820,7 @@ export async function updateBooking(
   const targetStationId = input.stationId || String(current.stationId);
   return withStationLocks([String(current.stationId), targetStationId], async () => {
     const booking = await mustBooking(id);
+    const before = auditFields(booking);
     if (input.notes !== undefined) booking.notes = input.notes;
     if (input.customerName) {
       booking.customerName = input.customerName;
@@ -824,7 +875,7 @@ export async function updateBooking(
       booking.startAt = startAt;
       booking.endAt = endAt;
       booking.durationMinutes = duration;
-      await saveRepriced(booking, settings, actor, "booking.edited");
+      await saveRepriced(booking, settings, actor, "booking.edited", before);
       if (booking.customerId) await refreshCustomerStats(String(booking.customerId));
       return serializeBooking(booking);
     }
@@ -832,7 +883,7 @@ export async function updateBooking(
     booking.updatedBy = actor.id;
     booking.updatedByName = actor.name;
     await booking.save();
-    await writeAudit({ actor, action: "booking.edited", entity: "booking", entityId: id });
+    await writeAudit({ actor, action: "booking.edited", entity: "booking", entityId: id, oldValue: before, newValue: auditFields(booking) });
     return serializeBooking(booking);
   });
 }
@@ -845,6 +896,7 @@ export async function recordBookingPayment(
     throw new AppError(403, "FORBIDDEN", "You do not have permission to refund a payment.");
   }
   const booking = await mustBooking(input.bookingId);
+  const before = auditFields(booking);
   const settings = await getSettings();
   const nextPaid = input.kind === "refund" ? booking.amountPaid - input.amount : booking.amountPaid + input.amount;
   if (nextPaid < -0.001) throw new AppError(400, "REFUND", "Refund cannot exceed the amount collected.");
@@ -873,7 +925,8 @@ export async function recordBookingPayment(
     action: input.kind === "refund" ? "payment.refunded" : "payment.recorded",
     entity: "booking",
     entityId: String(booking._id),
-    newValue: { amount: input.amount, method: input.method, paymentStatus: booking.paymentStatus },
+    oldValue: before,
+    newValue: { ...auditFields(booking), amount: input.amount, method: input.method },
   });
   return { paymentId: String(payment._id), booking: serializeBooking(booking), currency: settings.system.currency };
 }

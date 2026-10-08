@@ -17,7 +17,7 @@ export const PERMISSIONS = {
   "bookings.backdate": ["owner", "admin", "manager"],
   "bookings.reduce_time": ["owner", "admin", "manager"],
   "bookings.correct": ["owner", "admin"],
-  "bookings.delete": ["owner", "admin"],
+  "bookings.delete": ["owner", "admin", "manager", "staff"],
   "pricing.manage": ["owner", "admin"],
   "discounts.manage": ["owner", "admin", "manager"],
   "customers.manage": ["owner", "admin", "manager"],

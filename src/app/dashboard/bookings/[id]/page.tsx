@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api, endBookingWithPayment, formatDuration, money, notifyRefresh, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
 import { EndSessionDialog } from "@/components/admin/end-session-dialog";
+import { AuditDetail } from "@/components/admin/audit-detail";
 import { StatusPill } from "@/components/admin/status-pill";
+import { actionLabel } from "@/lib/audit-changes";
 import { formatClock } from "@/lib/gaming-day";
 
 type Detail = {
@@ -53,7 +55,7 @@ type Detail = {
   payments: { id: string; amount: number; kind: string; method: string; recordedByName: string; createdAt: string }[];
   productOrders: { id: string; orderNumber: string; total: number; items: { name: string; quantity: number; lineTotal: number }[] }[];
   combinedTotal: number;
-  history: { id: string; userName: string; action: string; createdAt: string }[];
+  history: { id: string; userName: string; action: string; oldValue: unknown; newValue: unknown; createdAt: string }[];
   canDelete?: boolean;
 };
 
@@ -190,10 +192,15 @@ export default function BookingDetailPage() {
         <h2 className="mb-2 text-sm font-medium">History</h2>
         {data.history.length === 0 && <p className="text-sm text-muted-foreground">No audit entries yet.</p>}
         {data.history.map((item) => (
-          <div key={item.id} className="flex justify-between border-b border-border py-2 text-sm last:border-0">
-            <span>{item.action} · {item.userName}</span>
-            <span className="text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
-          </div>
+          <details key={item.id} className="border-b border-border py-2 last:border-0">
+            <summary className="flex cursor-pointer justify-between gap-3 text-sm">
+              <span>{actionLabel(item.action)} · {item.userName}</span>
+              <span className="text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+            </summary>
+            <div className="pt-2">
+              <AuditDetail oldValue={item.oldValue} newValue={item.newValue} />
+            </div>
+          </details>
         ))}
         {data.payments.length > 0 && <h3 className="mt-4 text-sm font-medium">Payments</h3>}
         {data.payments.map((payment) => (
