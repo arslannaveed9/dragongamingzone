@@ -103,7 +103,7 @@ export function BookingDialog({
   const [customTime, setCustomTime] = useState(false);
   const [duration, setDuration] = useState(60);
   const [notes, setNotes] = useState("");
-  const [takePayment, setTakePayment] = useState(true);
+  const [takePayment, setTakePayment] = useState(false);
   const [method, setMethod] = useState("cash");
   const [paid, setPaid] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
@@ -145,7 +145,7 @@ export function BookingDialog({
       setCustomerPhone("");
       setCustomerId(null);
       setNotes("");
-      setTakePayment(true);
+      setTakePayment(false);
       setMethod("cash");
       setPaid("");
       setPaymentStatus("");
