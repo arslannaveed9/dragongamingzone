@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatDuration, money, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
+import { api, formatDuration, money, notifyRefresh, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
 import { StatusPill } from "@/components/admin/status-pill";
 import { formatClock } from "@/lib/gaming-day";
 import { displayBookingNumber } from "@/lib/text";
@@ -37,10 +38,22 @@ export default function BookingsPage() {
   if (gamingDay) params.set("gamingDay", gamingDay);
   if (status) params.set("status", status);
   if (q) params.set("q", q);
-  const { data, loading } = usePoll<{ items: Row[]; total: number; page: number; pageSize: number; timezone: string; timeFormat: "12h" | "24h"; currencySymbol: string }>(`/api/bookings?${params.toString()}`, 15000);
+  const { data, loading } = usePoll<{ items: Row[]; total: number; page: number; pageSize: number; timezone: string; timeFormat: "12h" | "24h"; currencySymbol: string; canDelete?: boolean }>(`/api/bookings?${params.toString()}`, 15000);
   const timezone = data?.timezone || "Asia/Karachi";
   const timeFormat = data?.timeFormat || "12h";
   const symbol = data?.currencySymbol || "Rs";
+
+  async function removeBooking(row: Row) {
+    const ok = confirm(`Delete ${row.customerName}'s booking? Its payments and counter sales are removed, and it leaves the reports.`);
+    if (!ok) return;
+    try {
+      await api(`/api/bookings/${row.id}`, { method: "DELETE" });
+      toast.success("Booking deleted.");
+      notifyRefresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete the booking.");
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -77,6 +90,7 @@ export default function BookingsPage() {
                 <td className="px-3 py-2">
                   <Link className="font-medium text-primary underline-offset-2 hover:underline" href={`/dashboard/bookings/${row.id}`}>{displayBookingNumber(row.bookingNumber)}</Link>
                   <button type="button" className="ml-2 text-xs font-medium text-primary" onClick={() => openBooking({ bookingId: row.id })}>Edit</button>
+                  {data.canDelete ? <button type="button" className="ml-2 text-xs font-medium text-destructive" onClick={() => void removeBooking(row)}>Delete</button> : null}
                 </td>
                 <td className="px-3 py-2">{row.customerName}</td>
                 <td className="px-3 py-2">{row.stationName}<div className="text-xs text-muted-foreground">{row.stationTypeName}</div></td>

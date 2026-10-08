@@ -99,6 +99,10 @@ export function BookingDialog({
     setLookup(false);
     setQuote(null);
     const bookingId = preset?.bookingId;
+    if (bookingId) {
+      setTakePayment(false);
+      setPaid("");
+    }
     if (!bookingId) {
       setEditingId(null);
       setMode(preset?.mode || "walk_in");
@@ -154,7 +158,6 @@ export function BookingDialog({
         const booking = detail.booking;
         const received = booking.amountPaid || 0;
         const total = booking.pricing?.finalAmount ?? 0;
-        const due = Math.max(0, Math.round((total - received) * 100) / 100);
         setEditingId(booking.id);
         setMode(booking.source === "reservation" ? "reservation" : "walk_in");
         setCustomTime(true);
@@ -173,8 +176,8 @@ export function BookingDialog({
         setAmountPaid(received);
         setBill(total);
         setMethod("cash");
-        setTakePayment(booking.paymentStatus !== "paid");
-        setPaid(due > 0 ? String(due) : "0");
+        setTakePayment(false);
+        setPaid("");
       })
       .catch((error) => toast.error(error.message));
     return () => {
@@ -228,12 +231,13 @@ export function BookingDialog({
       })
         .then((next) => {
           setQuote(next);
+          if (preset?.bookingId) return;
           setPaid((current) => current || String(next.finalAmount));
         })
         .catch(() => setQuote(null));
     }, 250);
     return () => clearTimeout(timer);
-  }, [open, mode, stationId, controllers, duration, gamingDay, startTime, customTime, catalog]);
+  }, [open, mode, stationId, controllers, duration, gamingDay, startTime, customTime, catalog, preset?.bookingId]);
 
   async function save() {
     setSaving(true);
@@ -297,12 +301,12 @@ export function BookingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] max-w-[calc(100%-1rem)] flex-col gap-3 overflow-hidden sm:max-w-lg">
+        <DialogHeader className="shrink-0 pr-8">
           <DialogTitle>{editingId ? `Edit ${customerName}` : mode === "walk_in" ? "New walk-in" : "New booking"}</DialogTitle>
         </DialogHeader>
         <div
-          className="grid gap-3"
+          className="grid min-h-0 flex-1 gap-3 overflow-y-auto overscroll-contain"
           onMouseDown={(event) => {
             const target = event.target as HTMLElement;
             if (target.closest("[data-customer-field]") || target.closest("[data-name-suggest]")) return;

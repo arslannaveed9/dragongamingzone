@@ -14,7 +14,7 @@ import { escapeRegex } from "@/lib/text";
 import { Booking } from "@/models/booking";
 import { Counter } from "@/models/counter";
 import { Payment } from "@/models/payment";
-import { PosOrder } from "@/models/pos";
+import { Bill, PosOrder } from "@/models/pos";
 import { AuditLog } from "@/models/audit-log";
 import { Station } from "@/models/station";
 import { writeAudit } from "@/services/audit-service";
@@ -468,6 +468,37 @@ export async function getBooking(id: string) {
     combinedTotal: Math.round((booking.pricing.finalAmount + productTotal) * 100) / 100,
     history: history.items,
   };
+}
+
+export async function deleteBooking(id: string, actor: Actor) {
+  const booking = await mustBooking(id);
+  const customerId = booking.customerId ? String(booking.customerId) : null;
+  const [payments, orders] = await Promise.all([
+    Payment.deleteMany({ bookingId: booking._id }),
+    PosOrder.deleteMany({ bookingId: booking._id }),
+  ]);
+  await Bill.updateMany({ bookingIds: booking._id }, { $pull: { bookingIds: booking._id } });
+  await AuditLog.deleteMany({ entity: "booking", entityId: id });
+  await booking.deleteOne();
+  if (customerId) await refreshCustomerStats(customerId);
+  await writeAudit({
+    actor,
+    action: "booking.deleted",
+    entity: "booking",
+    entityId: id,
+    oldValue: {
+      bookingNumber: booking.bookingNumber,
+      customerName: booking.customerName,
+      stationName: booking.stationName,
+      gamingDay: booking.gamingDay,
+      status: booking.status,
+      finalAmount: booking.pricing.finalAmount,
+      amountPaid: booking.amountPaid,
+      payments: payments.deletedCount,
+      orders: orders.deletedCount,
+    },
+  });
+  return { deleted: true };
 }
 
 async function mustBooking(id: string) {

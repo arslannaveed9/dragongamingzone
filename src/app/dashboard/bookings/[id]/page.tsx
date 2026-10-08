@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -54,10 +54,12 @@ type Detail = {
   productOrders: { id: string; orderNumber: string; total: number; items: { name: string; quantity: number; lineTotal: number }[] }[];
   combinedTotal: number;
   history: { id: string; userName: string; action: string; createdAt: string }[];
+  canDelete?: boolean;
 };
 
 export default function BookingDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { data, reload, loading } = usePoll<Detail>(`/api/bookings/${params.id}`, 10000);
   const [ending, setEnding] = useState(false);
   const [reason, setReason] = useState("");
@@ -73,6 +75,20 @@ export default function BookingDetailPage() {
       await reload();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not update the booking.");
+    }
+  }
+
+  async function removeBooking() {
+    if (!booking) return;
+    const ok = confirm(`Delete ${booking.customerName}'s booking? Its payments and counter sales are removed, and it leaves the reports.`);
+    if (!ok) return;
+    try {
+      await api(`/api/bookings/${booking.id}`, { method: "DELETE" });
+      toast.success("Booking deleted.");
+      notifyRefresh();
+      router.push("/dashboard/bookings");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete the booking.");
     }
   }
 
@@ -101,6 +117,7 @@ export default function BookingDetailPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => openBooking({ bookingId: booking.id })}>Edit</Button>
+          {data.canDelete ? <Button variant="destructive" onClick={() => void removeBooking()}>Delete</Button> : null}
           <StatusPill status={booking.status} />
         </div>
       </div>

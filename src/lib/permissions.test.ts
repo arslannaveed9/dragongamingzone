@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pagesForRole, permissionForPath } from "@/lib/permissions";
+import { can, pagesForRole, permissionForPath } from "@/lib/permissions";
 
 describe("staff page plan", () => {
   it("shows only the floor pages to a new staff user", () => {
@@ -14,6 +14,12 @@ describe("staff page plan", () => {
     for (const hidden of ["Stations", "Customers", "Reports", "Pricing", "Discounts", "POS", "Settings", "Audit Logs", "Users", "Tournaments"]) {
       expect(labels).not.toContain(hidden);
     }
+  });
+
+  it("lets owners delete a booking and keeps that off staff", () => {
+    expect(can("owner", "bookings.delete")).toBe(true);
+    expect(can("admin", "bookings.delete")).toBe(true);
+    expect(can("staff", "bookings.delete")).toBe(false);
   });
 
   it("blocks a staff URL even when the sidebar link is missing", () => {
