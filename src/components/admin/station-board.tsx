@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Countdown } from "@/components/admin/countdown";
-import { api, figure, formatDuration, money, notifyRefresh, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
+import { api, endBookingWithPayment, figure, formatDuration, money, notifyRefresh, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
 import { EndSessionDialog } from "@/components/admin/end-session-dialog";
 import { StatusPill } from "@/components/admin/status-pill";
 import { DayTimeline } from "@/components/day-timeline";
@@ -116,11 +116,11 @@ export function StationBoard() {
     }
   }
 
-  async function endSession() {
+  async function endSession(payment?: { amount: number; method: string }) {
     if (!ending) return;
     try {
-      await api(`/api/bookings/${ending.id}/actions`, { method: "POST", body: JSON.stringify({ type: "end" }) });
-      toast.success("Booking ended.");
+      await endBookingWithPayment(ending.id, payment);
+      toast.success(payment ? "Booking ended and marked paid." : "Booking ended.");
       setEnding(null);
       notifyRefresh();
     } catch (err) {
@@ -281,16 +281,18 @@ export function StationBoard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <EndSessionDialog
-        open={Boolean(ending)}
-        onOpenChange={(next) => !next && setEnding(null)}
-        customerName={ending?.name}
-        paymentStatus={ending?.paymentStatus || "unpaid"}
-        amountPaid={ending?.amountPaid || 0}
-        total={ending?.total ?? null}
-        symbol={symbol}
-        onConfirm={() => void endSession()}
-      />
+      {ending ? (
+        <EndSessionDialog
+          open
+          onOpenChange={(next) => !next && setEnding(null)}
+          customerName={ending.name}
+          paymentStatus={ending.paymentStatus}
+          amountPaid={ending.amountPaid}
+          total={ending.total}
+          symbol={symbol}
+          onConfirm={(payment) => void endSession(payment)}
+        />
+      ) : null}
     </Tabs>
   );
 }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api, formatDuration, money, notifyRefresh } from "@/components/admin/client";
+import { api, formatDuration, money, notifyRefresh, STATUS_LABEL } from "@/components/admin/client";
 
 type Catalog = {
   stations: {
@@ -84,6 +84,9 @@ export function BookingDialog({
   const [takePayment, setTakePayment] = useState(true);
   const [method, setMethod] = useState("cash");
   const [paid, setPaid] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [amountPaid, setAmountPaid] = useState(0);
+  const [bill, setBill] = useState<number | null>(null);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -109,7 +112,11 @@ export function BookingDialog({
       setCustomerId(null);
       setNotes("");
       setTakePayment(true);
+      setMethod("cash");
       setPaid("");
+      setPaymentStatus("");
+      setAmountPaid(0);
+      setBill(null);
     }
     /* eslint-enable react-hooks/set-state-in-effect */
     api<Catalog>("/api/stations")
@@ -138,10 +145,16 @@ export function BookingDialog({
             controllerCount: number;
             notes: string;
             source: string;
+            paymentStatus: string;
+            amountPaid: number;
+            pricing: { finalAmount: number };
           };
         }>(`/api/bookings/${bookingId}`);
         if (cancelled) return;
         const booking = detail.booking;
+        const received = booking.amountPaid || 0;
+        const total = booking.pricing?.finalAmount ?? 0;
+        const due = Math.max(0, Math.round((total - received) * 100) / 100);
         setEditingId(booking.id);
         setMode(booking.source === "reservation" ? "reservation" : "walk_in");
         setCustomTime(true);
@@ -156,8 +169,12 @@ export function BookingDialog({
         setStartTime(clockHm(booking.startAt, detail.timezone));
         setDuration(booking.durationMinutes);
         setNotes(booking.notes || "");
-        setTakePayment(false);
-        setPaid("");
+        setPaymentStatus(booking.paymentStatus || "unpaid");
+        setAmountPaid(received);
+        setBill(total);
+        setMethod("cash");
+        setTakePayment(booking.paymentStatus !== "paid");
+        setPaid(due > 0 ? String(due) : "0");
       })
       .catch((error) => toast.error(error.message));
     return () => {
@@ -222,7 +239,7 @@ export function BookingDialog({
     setSaving(true);
     try {
       if (editingId) {
-        await api(`/api/bookings/${editingId}`, {
+        const updated = await api<{ pricing: { finalAmount: number }; amountPaid: number }>(`/api/bookings/${editingId}`, {
           method: "PATCH",
           body: JSON.stringify({
             customerName,
@@ -235,6 +252,17 @@ export function BookingDialog({
             startTime,
           }),
         });
+        if (takePayment) {
+          const wanted = Number(paid || 0);
+          const due = Math.max(0, Math.round((updated.pricing.finalAmount - (updated.amountPaid || 0)) * 100) / 100);
+          const amount = Math.min(wanted, due);
+          if (amount > 0) {
+            await api("/api/payments", {
+              method: "POST",
+              body: JSON.stringify({ bookingId: editingId, amount, method, kind: "payment" }),
+            });
+          }
+        }
         toast.success("Booking updated.");
       } else {
         await api("/api/bookings", {
@@ -399,18 +427,22 @@ export function BookingDialog({
               <p className="font-heading text-xl font-bold tabular-nums">{money(quote.finalAmount, symbol)}</p>
             </div>
           )}
-          {!editingId && (
-            <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr_7.5rem]">
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={takePayment} onChange={(event) => setTakePayment(event.target.checked)} />
-                Paid
-              </label>
-              <select className="h-10 rounded-lg border border-input bg-background px-2 text-base disabled:opacity-50" value={method} disabled={!takePayment} onChange={(event) => setMethod(event.target.value)}>
-                {METHODS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-              </select>
-              <Input value={paid} onChange={(event) => setPaid(event.target.value)} inputMode="decimal" disabled={!takePayment} aria-label="Amount received" />
-            </div>
-          )}
+          {editingId ? (
+            <p className="text-sm text-muted-foreground">
+              Payment status: <strong className="text-foreground">{STATUS_LABEL[paymentStatus] || paymentStatus || "Unpaid"}</strong>
+              {bill != null ? ` · received ${money(amountPaid, symbol)} of ${money(bill, symbol)}` : ""}
+            </p>
+          ) : null}
+          <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr_7.5rem]">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={takePayment} onChange={(event) => setTakePayment(event.target.checked)} />
+              {editingId ? "Mark as paid" : "Paid"}
+            </label>
+            <select className="h-10 rounded-lg border border-input bg-background px-2 text-base disabled:opacity-50" value={method} disabled={!takePayment} onChange={(event) => setMethod(event.target.value)}>
+              {METHODS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+            <Input value={paid} onChange={(event) => setPaid(event.target.value)} inputMode="decimal" disabled={!takePayment} aria-label="Amount received" />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

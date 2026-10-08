@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api, formatDuration, money, notifyRefresh, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
+import { api, endBookingWithPayment, formatDuration, money, notifyRefresh, openBooking, STATUS_LABEL, usePoll } from "@/components/admin/client";
 import { EndSessionDialog } from "@/components/admin/end-session-dialog";
 import { StatusPill } from "@/components/admin/status-pill";
 import { formatClock } from "@/lib/gaming-day";
@@ -186,16 +186,27 @@ export default function BookingDetailPage() {
           </div>
         ))}
       </section>
-      <EndSessionDialog
-        open={ending}
-        onOpenChange={setEnding}
-        customerName={booking.customerName}
-        paymentStatus={booking.paymentStatus}
-        amountPaid={booking.amountPaid}
-        total={booking.pricing.finalAmount}
-        symbol={symbol}
-        onConfirm={() => { setEnding(false); void act({ type: "end" }); }}
-      />
+      {ending ? (
+        <EndSessionDialog
+          open
+          onOpenChange={setEnding}
+          customerName={booking.customerName}
+          paymentStatus={booking.paymentStatus}
+          amountPaid={booking.amountPaid}
+          total={booking.pricing.finalAmount}
+          symbol={symbol}
+          onConfirm={(payment) => {
+            setEnding(false);
+            void endBookingWithPayment(booking.id, payment)
+              .then(() => {
+                toast.success(payment ? "Booking ended and marked paid." : "Updated.");
+                notifyRefresh();
+                return reload();
+              })
+              .catch((error) => toast.error(error instanceof Error ? error.message : "Could not update the booking."));
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -66,6 +66,24 @@ export function notifyRefresh() {
   window.dispatchEvent(new Event("gz-refresh"));
 }
 
+/** End the booking, then record a payment up to whatever balance remains after the rebill. */
+export async function endBookingWithPayment(id: string, payment?: { amount: number; method: string }) {
+  const ended = await api<{ pricing: { finalAmount: number }; amountPaid: number }>(`/api/bookings/${id}/actions`, {
+    method: "POST",
+    body: JSON.stringify({ type: "end" }),
+  });
+  if (!payment || !(payment.amount > 0)) return ended;
+  const due = Math.max(0, Math.round((ended.pricing.finalAmount - (ended.amountPaid || 0)) * 100) / 100);
+  const amount = Math.min(payment.amount, due);
+  if (amount > 0) {
+    await api("/api/payments", {
+      method: "POST",
+      body: JSON.stringify({ bookingId: id, amount, method: payment.method, kind: "payment" }),
+    });
+  }
+  return ended;
+}
+
 export function openBooking(preset?: {
   mode?: "walk_in" | "reservation";
   stationId?: string;
