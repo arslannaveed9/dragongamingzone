@@ -207,6 +207,7 @@ export default function BookingDetailPage() {
         <EndSessionDialog
           open
           onOpenChange={setEnding}
+          bookingId={booking.id}
           customerName={booking.customerName}
           paymentStatus={booking.paymentStatus}
           amountPaid={booking.amountPaid}

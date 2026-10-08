@@ -116,7 +116,7 @@ export function StationBoard() {
     }
   }
 
-  async function endSession(payment?: { amount: number; method: string }) {
+  async function endSession(payment?: { amount?: number; method: string; payRemainder?: boolean }) {
     if (!ending) return;
     try {
       await endBookingWithPayment(ending.id, payment);
@@ -285,6 +285,7 @@ export function StationBoard() {
         <EndSessionDialog
           open
           onOpenChange={(next) => !next && setEnding(null)}
+          bookingId={ending.id}
           customerName={ending.name}
           paymentStatus={ending.paymentStatus}
           amountPaid={ending.amountPaid}
