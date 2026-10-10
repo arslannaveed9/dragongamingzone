@@ -14,9 +14,9 @@ export const PERMISSIONS = {
   "bookings.create": ["owner", "admin", "manager", "staff"],
   "bookings.update": ["owner", "admin", "manager", "staff"],
   "bookings.cancel": ["owner", "admin", "manager", "staff"],
-  "bookings.backdate": ["owner", "admin", "manager"],
-  "bookings.reduce_time": ["owner", "admin", "manager"],
-  "bookings.correct": ["owner", "admin"],
+  "bookings.backdate": ["owner", "admin", "manager", "staff"],
+  "bookings.reduce_time": ["owner", "admin", "manager", "staff"],
+  "bookings.correct": ["owner", "admin", "manager", "staff"],
   "bookings.delete": ["owner", "admin", "manager", "staff"],
   "pricing.manage": ["owner", "admin"],
   "discounts.manage": ["owner", "admin", "manager"],
@@ -82,7 +82,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 /** What an owner should expect when they create an account of this role. */
 export const ROLE_PLAN: Record<Role, string> = {
-  staff: "Floor cashier. They start walk-ins and take reservations. The counter, customer directory, station setup, reports, prices, discounts, settings, the audit log, and other accounts stay hidden. They also cannot backdate a booking, shorten a session, or issue a refund.",
+  staff: "Floor cashier. They start walk-ins, take reservations, edit any booking, book a past time, and shorten a session. The counter, customer directory, station setup, reports, prices, discounts, settings, the audit log, and other accounts stay hidden. They cannot issue a refund.",
   manager: "Floor lead. Everything staff can do, plus reports, discounts, station setup, product setup, refunds, and corrections to past bookings.",
   admin: "Operations. Everything a manager can do, plus pricing rules, business settings, the audit log, and staff accounts. An admin cannot create or edit an owner.",
   owner: "Full access, including other owner accounts.",

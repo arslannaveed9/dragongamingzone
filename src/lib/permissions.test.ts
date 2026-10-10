@@ -16,6 +16,12 @@ describe("staff page plan", () => {
     }
   });
 
+  it("lets staff edit a past or completed booking", () => {
+    expect(can("staff", "bookings.backdate")).toBe(true);
+    expect(can("staff", "bookings.reduce_time")).toBe(true);
+    expect(can("staff", "bookings.correct")).toBe(true);
+  });
+
   it("lets staff delete a booking", () => {
     expect(can("owner", "bookings.delete")).toBe(true);
     expect(can("admin", "bookings.delete")).toBe(true);
